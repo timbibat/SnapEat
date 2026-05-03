@@ -1,0 +1,5 @@
+flask
+scikit-learn
+pandas
+numpy
+# Add other ML or DB dependencies here (e.g., firebase-admin, gunicorn)
