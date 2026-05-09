@@ -20,6 +20,29 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // --- Password Visibility Toggle ---
+    function setupPasswordToggle(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (input && icon) {
+            icon.addEventListener('click', function() {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                }
+            });
+        }
+    }
+
+    setupPasswordToggle('loginPassword', 'togglePasswordIcon');
+    setupPasswordToggle('signupPassword', 'toggleSignupPasswordIcon');
+    setupPasswordToggle('signupConfirmPassword', 'toggleConfirmPasswordIcon');
+
     // --- Login Logic ---
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {

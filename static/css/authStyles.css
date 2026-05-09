@@ -1,1 +1,165 @@
-/* Styles for the authentication flow (Login, Signup, Forgot Password). Includes form layouts, input styling, and primary action buttons. */
+/* CSS Variables based on color palette */
+:root {
+    --primaryGreen: #336A29; 
+    --btnGreen: #ABC270; 
+    --btnHoverGreen: #94A85D; 
+    --bodyBackground: #ffffff; 
+    --linkBlue: #0d6efd; 
+    --inputBackground: #fcfcfc; 
+    --textGray: #473C33; 
+    --subtleTextGray: #6c757d; 
+    --inputBorder: #e1e1e1;
+    --inputShadow: rgba(0, 0, 0, 0.05);
+    --cardShadow: rgba(0, 0, 0, 0.08);
+}
+
+/* Base Styles using camelCase */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bodyBackground);
+    color: var(--textGray);
+}
+
+/* Page Layout: Center Content */
+.pageContainer {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+/* Auth Card */
+.authCard {
+    width: 100%;
+    max-width: 480px;
+    background-color: #fff;
+    padding: 4rem 3.5rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px var(--cardShadow);
+    border-bottom: 3px solid rgba(0,0,0,0.02);
+}
+
+/* Text Styles - UPDATED for the new chunky style */
+.authTitle {
+    font-family: 'Lilita One', cursive; /* Chunky, bubbly font */
+    color: var(--primaryGreen);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem; /* Pulled closer to the input box */
+    font-size: 1.15rem; /* Scaled down to match image proportions */
+    letter-spacing: 0.5px;
+    text-align: left; /* Left aligned */
+}
+
+/* Input Fields */
+.customInputWrapper {
+    position: relative;
+}
+
+.customInput {
+    background-color: var(--inputBackground);
+    border: 1px solid var(--inputBorder);
+    border-radius: 20px;
+    padding: 1.1rem 1.25rem;
+    padding-right: 3rem; 
+    color: var(--textGray);
+    font-size: 1rem;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.03); 
+    transition: all 0.2s ease-in-out;
+}
+
+.customInput::placeholder {
+    color: #a0a0a0;
+}
+
+.customInput:focus {
+    /* Updated to match the blue focus ring in your new image */
+    border-color: #0d6efd;
+    background-color: #fff;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.03), 0 0 0 3px rgba(13, 110, 253, 0.25); 
+    outline: none;
+}
+
+/* Icons inside Inputs */
+.customInputIcon {
+    position: absolute;
+    right: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #000; /* Darkened icon based on your image */
+    font-size: 1.1rem;
+}
+
+.cursorPointer {
+    cursor: pointer;
+}
+
+/* Error Message below form fields */
+.errorMessage {
+    font-size: 0.9rem;
+    display: none;
+    margin-top: -0.5rem;
+}
+
+/* Forgot Password Link Wrapper */
+.forgotPasswordWrapper {
+    margin-bottom: 1.5rem;
+}
+
+.forgotPasswordLink {
+    color: var(--linkBlue);
+    text-decoration: underline; /* Added underline to match image */
+    font-size: 0.85rem;
+}
+.forgotPasswordLink:hover {
+    color: #0a58ca;
+}
+
+/* Auth Button */
+.authBtn {
+    background-color: var(--btnGreen);
+    border-color: var(--btnGreen);
+    color: white;
+    border-radius: 20px;
+    font-weight: 700;
+    padding: 1.1rem 0;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 8px rgba(171, 194, 112, 0.3);
+    width: 100%;
+    transition: all 0.2s ease-in-out;
+    margin-top: 1rem;
+}
+
+.authBtn:hover {
+    background-color: var(--btnHoverGreen);
+    border-color: var(--btnHoverGreen);
+    transform: translateY(-1px);
+    color: white;
+}
+
+/* Bottom Text */
+.bottomTextWrapper {
+    margin-top: 3.5rem;
+}
+
+.bottomText {
+    color: var(--subtleTextGray);
+    font-size: 0.9rem;
+}
+
+.signupLink {
+    color: var(--linkBlue);
+    text-decoration: underline; /* Matching image */
+    font-weight: 400;
+}
+.signupLink:hover {
+    color: #0a58ca;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 576px) {
+    .authCard {
+        padding: 3rem 1.5rem;
+    }
+}
