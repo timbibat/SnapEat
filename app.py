@@ -15,6 +15,11 @@ def scan():
     """QR/Manual scan interface."""
     return render_template('scan.html')
 
+@app.route('/analysis')
+def analysis():
+    """Analysis Results page."""
+    return render_template('analysisResults.html')
+
 @app.route('/api/food/identify', methods=['POST'])
 def identify_food():
     """
