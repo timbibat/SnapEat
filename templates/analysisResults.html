@@ -1,1 +1,158 @@
-<!-- Analysis Results page for SnapEat. Displays nutritional information (calories, carbs, sugar, etc.), health benefits/disadvantages, and age sensitivity cards. Handles both healthy and unhealthy food states. -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Result - SnapEat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/globalStyles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/resultsStyles.css') }}">
+    <!-- Using FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Use 'theme-healthy' for Apple, 'theme-unhealthy' for Fries -->
+    <div class="analysis-container theme-healthy">
+        <!-- Header -->
+        <div class="header-curve">
+            <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+            <h1 class="header-title display-font">ANALYSIS RESULT</h1>
+        </div>
+
+        <!-- Food Image -->
+        <div class="food-image-container">
+            <img src="https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60"
+                alt="Apple" class="food-img">
+        </div>
+
+        <!-- Food Name -->
+        <h2 class="food-name display-font">APPLE</h2>
+
+        <!-- Nutrition Grid -->
+        <div class="nutrition-grid">
+            <div class="nutrition-card">
+                <span class="value val-orange display-font">95 kcal</span>
+                <span class="label">Calories</span>
+            </div>
+            <div class="nutrition-card">
+                <span class="value val-yellow display-font">25 g</span>
+                <span class="label">Carbohydrates</span>
+            </div>
+            <div class="nutrition-card">
+                <span class="value val-orange display-font">19 g</span>
+                <span class="label">Sugars</span>
+            </div>
+            <div class="nutrition-card">
+                <span class="value val-orange display-font">4 g</span>
+                <span class="label">Dietary Fiber</span>
+            </div>
+            <div class="nutrition-card">
+                <span class="value val-green display-font">0.5 g</span>
+                <span class="label">Protein</span>
+            </div>
+            <div class="nutrition-card">
+                <span class="value val-yellow display-font">0.3 g</span>
+                <span class="label">Fat</span>
+            </div>
+        </div>
+
+        <!-- Health Status Circle -->
+        <div class="status-circle-container">
+            <div class="status-circle">
+                <span class="status-text display-font">HEALTHY</span>
+            </div>
+        </div>
+
+        <!-- Health Benefits Card -->
+        <div class="info-card benefits-card">
+            <h3 class="card-title display-font">Health Benefits</h3>
+            <ul class="benefits-list">
+                <li>Good for digestion (high fiber)</li>
+                <li>Supports immune system (Vitamin C)</li>
+                <li>Helps heart health</li>
+                <li>Low in calories, good for weight management</li>
+            </ul>
+        </div>
+
+        <!-- Age Sensitivity -->
+        <div class="age-sensitivity-section">
+            <h3 class="section-title display-font">Age Sensitivity</h3>
+            <div class="age-grid">
+
+                <!-- Kid Card -->
+                <div class="age-card">
+                    <div class="age-icon">
+                        <i class="fa-solid fa-child"></i>
+                    </div>
+                    <h4 class="age-title display-font">Kid</h4>
+                    <div class="recommendation">
+                        <span class="dot dot-green"></span>
+                        <span class="rec-text">Highly Recommended</span>
+                    </div>
+                    <ul class="age-effects">
+                        <li><i class="fa-solid fa-lightbulb icon-bulb"></i> Supports Growth and Immunity</li>
+                        <li>Good for teeth</li>
+                        <li>Brain Support</li>
+                    </ul>
+                </div>
+
+                <!-- Teen Card -->
+                <div class="age-card">
+                    <div class="age-icon">
+                        <i class="fa-solid fa-child-reaching"></i>
+                    </div>
+                    <h4 class="age-title display-font">Teen</h4>
+                    <div class="recommendation">
+                        <span class="dot dot-green"></span>
+                        <span class="rec-text">Highly Recommended</span>
+                    </div>
+                    <ul class="age-effects">
+                        <li><i class="fa-solid fa-lightbulb icon-bulb"></i> Weight Management</li>
+                        <li>Skin Health</li>
+                        <li>Focus & Memory</li>
+                    </ul>
+                </div>
+
+                <!-- Adult Card -->
+                <div class="age-card">
+                    <div class="age-icon">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <h4 class="age-title display-font">Adult</h4>
+                    <div class="recommendation">
+                        <span class="dot dot-green"></span>
+                        <span class="rec-text">Highly Recommended</span>
+                    </div>
+                    <ul class="age-effects">
+                        <li><i class="fa-solid fa-lightbulb icon-bulb"></i> Blood Sugar Control</li>
+                        <li>Weight Control</li>
+                        <li>Gut Health</li>
+                    </ul>
+                </div>
+
+                <!-- Elderly Card -->
+                <div class="age-card">
+                    <div class="age-icon">
+                        <i class="fa-solid fa-person-cane"></i>
+                    </div>
+                    <h4 class="age-title display-font">Elderly</h4>
+                    <div class="recommendation">
+                        <span class="dot dot-green"></span>
+                        <span class="rec-text">Highly Recommended</span>
+                    </div>
+                    <ul class="age-effects">
+                        <li><i class="fa-solid fa-lightbulb icon-bulb"></i> Supports Digestion</li>
+                        <li>Heart protection</li>
+                        <li>Bone Support</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
