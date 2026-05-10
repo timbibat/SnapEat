@@ -37,8 +37,8 @@ instance/
 Thumbs.db
 
 #Kaggle / Large Data fallback
-(Uncomment below if you want to keep data out of Git)
-data/*.csv
+# (Uncomment below if you want to keep data out of Git)
+# data/*.csv
 
 # Node (if any)
 node_modules/

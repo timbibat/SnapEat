@@ -2,7 +2,6 @@ flask
 scikit-learn
 pandas
 numpy
-google-generativeai
 Pillow
 python-dotenv
 # Add other ML or DB dependencies here (e.g., firebase-admin, gunicorn)

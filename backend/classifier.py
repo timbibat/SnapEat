@@ -4,7 +4,7 @@ Classifies food items as Healthy, Moderate, or Unhealthy
 and calculates a health score (1-10) based on nutritional data.
 """
 
-from backend.analyzer import get_food_by_name
+from backend.food_dataset import get_food_by_name
 
 
 # Thresholds for health scoring

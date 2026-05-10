@@ -436,48 +436,6 @@ FOOD_DATABASE = {
             "elderly": {"rating": "Not Recommended", "tips": ["Blood pressure risk", "Low nutrition", "Avoid salty snacks"]}
         }
     },
-    "cucumber": {
-        "name": "Cucumber",
-        "category": "Vegetable",
-        "image_url": "https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?auto=format&fit=crop&w=500&q=60",
-        "nutrition": {
-            "calories": 15, "carbs": 3.6, "sugars": 1.7,
-            "fiber": 0.5, "protein": 0.7, "fat": 0.1,
-            "vitamin_c": 2.8, "potassium": 147, "sodium": 2
-        },
-        "health_benefits": [
-            "Hydrating (95% water)",
-            "Promotes healthy skin",
-            "Contains antioxidants"
-        ],
-        "age_sensitivity": {
-            "kid":     {"rating": "Excellent", "tips": ["Great crunchy snack", "Hydrating after play"]},
-            "teen":    {"rating": "Excellent", "tips": ["Good for skin health", "Low calorie snack"]},
-            "adult":   {"rating": "Excellent", "tips": ["Weight management", "Daily hydration"]},
-            "elderly": {"rating": "Excellent", "tips": ["Easy to chew", "Gentle on digestion"]}
-        }
-    },
-    "tortilla_chips": {
-        "name": "Tortilla Chips",
-        "category": "Snacks",
-        "image_url": "https://images.unsplash.com/photo-1541533848490-bc8115cd6522?auto=format&fit=crop&w=500&q=60",
-        "nutrition": {
-            "calories": 489, "carbs": 65, "sugars": 2,
-            "fiber": 6, "protein": 7, "fat": 24,
-            "vitamin_c": 0, "potassium": 250, "sodium": 600
-        },
-        "health_benefits": [
-            "Source of energy",
-            "Contains corn-based fiber",
-            "Low in sugar"
-        ],
-        "age_sensitivity": {
-            "kid":     {"rating": "Occasional", "tips": ["High sodium", "Choking hazard for toddlers", "Moderation is key"]},
-            "teen":    {"rating": "Occasional", "tips": ["Active fuel", "Watch the portions", "Can affect skin"]},
-            "adult":   {"rating": "Occasional", "tips": ["High calories", "High sodium", "Balanced snack"]},
-            "elderly": {"rating": "Not Recommended", "tips": ["High salt level", "Hard texture", "Low nutrition"]}
-        }
-    },
 }
 
 
@@ -511,8 +469,7 @@ def load_kaggle_food(food_name):
                 reader = csv.DictReader(f)
                 for row in reader:
                     # Search in 'food' column
-                    row_food = row['food'].lower()
-                    if food_name == row_food or food_name in row_food or row_food in food_name:
+                    if food_name in row['food'].lower():
                         return format_kaggle_row(row)
         except Exception as e:
             print(f"Error reading {filename}: {e}")
@@ -572,9 +529,7 @@ def get_food_by_name(food_name):
 
     # 2. Check Manual Dictionary (Partial match)
     for key, data in FOOD_DATABASE.items():
-        # Smart keyword matching: e.g. "doritos nacho cheese" contains "tortilla_chips" keyword?
-        # Or does "tortilla_chips" exist in the query?
-        if query in key or key in query or query in data["name"].lower() or data["name"].lower() in query:
+        if query in key or query in data["name"].lower():
             return data
 
     # 3. Fallback to Kaggle CSVs
