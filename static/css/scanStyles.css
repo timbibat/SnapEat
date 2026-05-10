@@ -1,1 +1,137 @@
 /* Styles for the food scanning interface. Includes camera viewport styling, capture button, and image preview area. */
+:root {
+    --appBgColor: #f4f4f4;
+    --appThemeGreen: #a5b974;
+    --appThemeOrange: #de8836;
+}
+
+.scanBody {
+    background-color: var(--appBgColor);
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent scrolling, keeps app-like feel */
+}
+
+/* Top Decoration Curve */
+.topDecorationContainer {
+    width: 100%;
+    height: 80px;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+}
+
+.topDecorationCurve {
+    background-color: var(--appThemeGreen);
+    height: 120px;
+    width: 150%;
+    margin-left: -25%; /* Centers the wide curve */
+    border-radius: 0 0 50% 50%;
+    transform: translateY(-50px);
+}
+
+/* Camera Area */
+.cameraMainArea {
+    padding: 60px 0; /* Add space for top/bottom fixed elements */
+}
+
+.cameraPreview {
+    width: calc(100% - 60px);
+    height: 60vh;
+    max-height: 600px;
+    object-fit: cover;
+    background-color: #e0e0e0;
+    /* Optional: Slight border radius to soften the video edges if it doesn't bleed */
+    border-radius: 4px; 
+}
+
+.focusOverlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none; /* Crucial: Allows clicks to pass through to the video if needed later */
+}
+
+/* Bottom Controls */
+.bottomControlsContainer {
+    background-color: var(--appThemeGreen);
+    border-radius: 70px 70px 0 0;
+    padding: 0 40px;
+    height: 22vh;
+    min-height: 140px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+}
+
+.uploadLabel {
+    cursor: pointer;
+    background-color: white;
+    border-radius: 18px;
+    padding: 4px;
+    width: 65px;
+    height: 65px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s ease;
+}
+
+.uploadLabel:active {
+    transform: scale(0.95);
+}
+
+.galleryIcon {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 14px;
+}
+
+/* Capture Button Styles */
+.captureBtn {
+    background-color: white;
+    border: none;
+    border-radius: 50%;
+    width: 85px;
+    height: 85px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.2s ease;
+}
+
+.captureBtn:active {
+    transform: scale(0.95);
+}
+
+.captureBtnInner {
+    background-color: var(--appThemeOrange);
+    border-radius: 50%;
+    width: 65px;
+    height: 65px;
+}
+
+/* Switch Camera Button */
+.switchCameraBtn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    width: 65px;
+    height: 65px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s ease;
+}
+
+.switchCameraBtn:active {
+    transform: scale(0.95) rotate(45deg);
+}

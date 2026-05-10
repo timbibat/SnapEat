@@ -1,19 +1,11 @@
-/* Base styles and variables */
+/* Base styles and variables matching the reference image */
 :root {
-    --bg-color: #f4f6f8;
-    --text-main: #333333;
-
-    /* Healthy Theme Colors */
-    --theme-primary-healthy: #a1c682;
-    --theme-secondary-healthy: #3b823e;
-    --theme-card-healthy: #e6efd1;
-    --theme-icon-bg-healthy: #8bae54;
-
-    /* Unhealthy Theme Colors */
-    --theme-primary-unhealthy: #a1c682;
-    --theme-unhealthy-red: #e74c3c;
-    --theme-unhealthy-card: #f6b5aa;
-    --theme-unhealthy-icon-bg: #c0392b;
+    --bg-color: #f8f9fa;
+    --text-dark: #333333;
+    --app-green: #a1c682;
+    --app-dark-green: #2d5a27;
+    --app-orange: #f0932b;
+    --app-light-green: #e9f0d8;
 }
 
 .display-font {
@@ -21,52 +13,278 @@
     letter-spacing: 0.5px;
 }
 
-/* Custom Shapes */
-.header-curve {
-    background-color: var(--theme-primary-healthy);
-    border-bottom-left-radius: 50% 50px;
-    border-bottom-right-radius: 50% 50px;
+body {
+    background-color: #f0f0f0; /* Page background */
 }
 
-/* Themes */
-.theme-healthy .header-curve { background-color: var(--theme-primary-healthy); }
-.theme-healthy .food-name { color: var(--theme-secondary-healthy); }
-.theme-healthy .status-circle { border-color: var(--theme-secondary-healthy) !important; }
-.theme-healthy .status-text { color: var(--theme-secondary-healthy); }
-.theme-healthy .card-title { color: var(--theme-secondary-healthy); }
-.theme-healthy .section-title { color: var(--theme-secondary-healthy); }
-.theme-healthy .age-card { background-color: var(--theme-card-healthy); }
-.theme-healthy .age-icon { background-color: var(--theme-icon-bg-healthy); }
+.analysis-container {
+    width: 100%;
+    max-width: 500px;
+    background-color: var(--bg-color);
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    min-height: 100vh;
+    padding-bottom: 80px !important;
+    margin: 0 auto;
+    position: relative;
+}
 
-.theme-unhealthy .header-curve { background-color: var(--theme-primary-unhealthy); }
-.theme-unhealthy .food-name { color: #2c592d; }
-.theme-unhealthy .status-circle { border-color: var(--theme-unhealthy-red) !important; }
-.theme-unhealthy .status-text { color: var(--theme-unhealthy-red); }
-.theme-unhealthy .card-title { color: var(--theme-unhealthy-red); }
-.theme-unhealthy .section-title { color: var(--theme-unhealthy-red); }
-.theme-unhealthy .age-card { background-color: var(--theme-unhealthy-card); }
-.theme-unhealthy .age-icon { background-color: var(--theme-unhealthy-icon-bg); }
+/* Top Decoration */
+.header-curve {
+    background-color: var(--app-green);
+    height: 140px;
+    width: 150%;
+    margin-left: -25%;
+    border-radius: 0 0 50% 50%;
+    transform: translateY(-40px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 25px;
+    z-index: 1;
+}
 
-/* Background element at bottom */
-.analysis-container::after {
-    content: '';
+.header-content {
+    position: absolute;
+    top: 25px;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+/* Food Image */
+.food-image-wrapper {
+    margin-top: -60px;
+    z-index: 3;
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.food-image-wrapper img {
+    width: 85%;
+    max-width: 320px;
+    aspect-ratio: 4/3;
+    height: auto;
+    object-fit: cover;
+    border-radius: 20px;
+    border: 6px solid white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Food Title */
+.food-name {
+    color: var(--app-dark-green);
+    font-size: 42px;
+    margin: 25px 0;
+    text-align: center;
+}
+
+/* Nutrition Cards */
+.nutrition-card {
+    background-color: white;
+    border-radius: 20px;
+    padding: 15px 5px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.nutrition-value {
+    color: var(--app-orange);
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+}
+
+.nutrition-label {
+    color: #666;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+/* Health Status */
+.status-circle-container {
+    display: flex;
+    justify-content: center;
+    margin: 40px 0;
+}
+
+/* Fluid Status Circle */
+.status-circle {
+    width: 45vw;
+    height: 45vw;
+    max-width: 180px;
+    max-height: 180px;
+    border: 12px solid var(--app-green);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+/* Nutrition Value scaling */
+@media (max-width: 360px) {
+    .nutrition-value {
+        font-size: 0.9rem;
+    }
+    .nutrition-label {
+        font-size: 0.6rem;
+    }
+    .food-name {
+        font-size: 32px;
+    }
+}
+
+/* Handling wider WebViews */
+@media (min-width: 768px) {
+    .analysis-container {
+        max-width: 600px;
+        margin: 20px auto;
+        border-radius: 30px;
+        min-height: 90vh;
+    }
+}
+
+.status-text {
+    color: var(--app-dark-green);
+    font-size: 32px;
+}
+
+/* Health Benefits */
+.benefits-card {
+    background-color: white;
+    border-radius: 25px;
+    padding: 25px;
+    margin: 0 20px 40px 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.benefits-title {
+    color: var(--app-dark-green);
+    margin-bottom: 15px;
+}
+
+.benefits-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.benefits-list li {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Age Sensitivity */
+.section-title {
+    color: var(--app-dark-green);
+    margin: 0 20px 30px 20px;
+}
+
+.age-card {
+    background-color: var(--app-light-green);
+    border-radius: 25px;
+    padding: 35px 15px 20px 15px;
+    position: relative;
+    height: 100%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.age-icon-wrapper {
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 70px;
+    background-color: var(--app-green);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 4px solid var(--app-light-green);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.age-icon-wrapper img {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+}
+
+.age-name {
+    color: #333;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.age-rating-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.rating-dot {
+    width: 12px;
+    height: 12px;
+    background-color: #4cd137;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.rating-text {
+    font-size: 9px;
+    font-weight: 800;
+    color: #333;
+}
+
+.age-tips {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.age-tips li {
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.age-tips li i {
+    margin-right: 5px;
+    font-size: 12px;
+}
+
+/* Bottom Decoration */
+.footer-curve {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 40px;
-    background-color: var(--theme-primary-healthy);
-    border-top-left-radius: 50% 30px;
-    border-top-right-radius: 50% 30px;
-    z-index: 1;
+    height: 50px;
+    background-color: var(--app-green);
+    border-radius: 40px 40px 0 0;
+    z-index: 10;
 }
 
-.theme-unhealthy.analysis-container::after {
-    background-color: var(--theme-primary-unhealthy);
+/* Scroll handling */
+.analysis-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
 }
 
-/* Value colors */
-.val-orange { color: #f39c12; }
-.val-yellow { color: #f1c40f; }
-.val-red { color: #e74c3c; }
-.val-green { color: #2ecc71; }
+/* Theme overrides for Unhealthy */
+.theme-unhealthy .status-circle { border-color: #ff7675; }
+.theme-unhealthy .status-text { color: #d63031; }
+.theme-unhealthy .rating-dot { background-color: #ff7675; }

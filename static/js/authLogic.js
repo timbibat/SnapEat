@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.status === 'success') {
                     AppMain.showToast("Signup successful! Please login.", "success");
-                    window.location.href = '/loginPage.html';
+                    window.location.href = '/login';
                 }
             } catch (error) {
                 // Error handled by AppMain.apiCall

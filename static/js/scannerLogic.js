@@ -79,15 +79,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Upload Logic ---
-    async function uploadFoodImage(imageBlob) {
+    async function uploadFoodImage(imageBlob, name = null) {
         if (window.AppMain) AppMain.showLoader();
 
         const formData = new FormData();
         formData.append('food_image', imageBlob, 'capture.jpg');
+        
+        // For the prototype: If a name is provided (e.g. from filename), send it
+        if (name) {
+            formData.append('food_name', name);
+        } else {
+            // Default mock name for camera captures in prototype
+            formData.append('food_name', 'apple'); 
+        }
 
         try {
-            // Note: Using FormData — do NOT set Content-Type manually,
-            // the browser sets it automatically with the boundary.
             const response = await fetch('/api/food/identify', {
                 method: 'POST',
                 body: formData
@@ -108,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Redirect to results page with food_id
             if (data.food_id) {
-                window.location.href = `/api/food/details/${data.food_id}`;
+                window.location.href = `/analysis/${data.food_id}`;
             }
 
         } catch (error) {
@@ -143,7 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
         imageUploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
-                uploadFoodImage(file);
+                // Get filename without extension to use as food_name for prototype
+                const mockName = file.name.split('.')[0];
+                uploadFoodImage(file, mockName);
             }
         });
     }
