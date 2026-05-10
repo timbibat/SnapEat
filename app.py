@@ -1,11 +1,14 @@
 from flask import Flask, render_template, request, jsonify
 import os
+from dotenv import load_dotenv
 
-from backend.analyzer import identify_food_item, get_nutrition_data, search_food_items, get_available_foods
+# Load environment variables from .env file
+load_dotenv()
+
+from backend.analyzer import identify_food_item, get_nutrition_data, search_food_items, get_available_foods, get_food_by_name
 from backend.classifier import classify_health_status, calculate_health_score, get_full_classification
 from backend.recommender import get_recommendations, get_household_suggestions
 from backend.database import save_food_log, get_daily_log, get_daily_totals, get_weekly_summary, get_recent_scans, register_user, authenticate_user, reset_password
-from backend.food_dataset import get_food_by_name
 
 # Initialize Flask app
 # Vercel looks for 'app' as the entry point
@@ -115,21 +118,28 @@ def identify_food():
     Endpoint for identifying food from image/text data.
     Accepts JSON body with 'food_name' or multipart form with 'food_image'.
     """
+    image_data = None
     food_name = None
 
-    if request.is_json:
-        food_name = request.json.get('food_name')
-    elif request.form:
-        food_name = request.form.get('food_name')
+    # Handle image file upload
+    if 'food_image' in request.files:
+        image_data = request.files['food_image'].read()
 
-    if not food_name:
+    # Handle form or JSON data
+    if request.form:
+        food_name = request.form.get('food_name')
+    elif request.is_json:
+        food_name = request.json.get('food_name')
+
+    if not food_name and not image_data:
         return jsonify({
             "status": "error",
-            "message": "Please provide a food_name.",
+            "message": "Please provide a food_name or an image.",
             "available_foods": get_available_foods()
         }), 400
 
-    result = identify_food_item(food_name=food_name)
+    # Call the analyzer (now supports Gemini AI)
+    result = identify_food_item(image_data=image_data, food_name=food_name)
 
     if result and result["status"] == "identified":
         food = result["food"]
@@ -154,9 +164,16 @@ def identify_food():
             "log_id": log_id
         })
 
+    # Improved error handling
+    error_msg = "Could not identify food. Please try a different photo or search manually."
+    if not image_data and food_name:
+        error_msg = f"Food '{food_name}' not found in our database."
+    elif image_data and not result:
+        error_msg = "AI was unable to recognize this food. Try a clearer photo."
+
     return jsonify({
         "status": "error",
-        "message": f"Food '{food_name}' not found in database.",
+        "message": error_msg,
         "available_foods": get_available_foods()
     }), 404
 

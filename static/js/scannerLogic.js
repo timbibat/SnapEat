@@ -85,12 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
         formData.append('food_image', imageBlob, 'capture.jpg');
         
-        // For the prototype: If a name is provided (e.g. from filename), send it
+        // Send name only if explicitly provided (manual search)
         if (name) {
             formData.append('food_name', name);
-        } else {
-            // Default mock name for camera captures in prototype
-            formData.append('food_name', 'apple'); 
         }
 
         try {
@@ -149,9 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
         imageUploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
-                // Get filename without extension to use as food_name for prototype
-                const mockName = file.name.split('.')[0];
-                uploadFoodImage(file, mockName);
+                // Now that we have Gemini, we send the file only and let AI identify it
+                uploadFoodImage(file);
             }
         });
     }

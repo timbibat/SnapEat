@@ -3,53 +3,44 @@ Recommendation engine for SnapEat.
 Suggests healthier alternatives and provides age-specific dietary advice.
 """
 
-from backend.food_dataset import FOOD_DATABASE, get_food_by_name
+from backend.food_dataset import FOOD_DATABASE
+from backend.analyzer import get_food_by_name, get_available_foods
+# FOOD_DATABASE replaced by AI calls
 from backend.classifier import calculate_health_score
 
 
 def get_recommendations(food_name, health_status=None):
     """
-    Suggest healthier alternatives if the food is classified as 'Unhealthy' or 'Moderate'.
-
-    Args:
-        food_name: Name of the current food item.
-        health_status: Optional health classification string.
-
-    Returns:
-        list of dicts with recommended food alternatives.
+    Suggest healthier alternatives using AI.
     """
-    current_food = get_food_by_name(food_name)
-    if not current_food:
-        return []
+    from backend.analyzer import get_model
+    model = get_model()
+    if not model: return []
 
-    current_score = calculate_health_score(current_food["nutrition"])
-    current_category = current_food["category"]
-
-    recommendations = []
-
-    for key, food in FOOD_DATABASE.items():
-        # Skip the same food
-        if food["name"] == current_food["name"]:
-            continue
-
-        food_score = calculate_health_score(food["nutrition"])
-
-        # Only recommend foods with a better health score
-        if food_score > current_score:
+    try:
+        prompt = f"Given the food '{food_name}', suggest 3 healthier alternatives. Return ONLY a JSON list of objects with: name, reason_why_healthier."
+        response = model.generate_content(prompt)
+        import json
+        raw_text = response.text.strip()
+        if "```" in raw_text:
+            start = raw_text.find("[")
+            end = raw_text.rfind("]") + 1
+            raw_text = raw_text[start:end]
+        
+        alts = json.loads(raw_text)
+        # Format for template
+        recommendations = []
+        for alt in alts:
             recommendations.append({
-                "name": food["name"],
-                "category": food["category"],
-                "health_score": food_score,
-                "calories": food["nutrition"]["calories"],
-                "image_url": food.get("image_url", ""),
-                "same_category": food["category"] == current_category
+                "name": alt["name"],
+                "category": "Recommended",
+                "health_score": 9,
+                "reason": alt.get("reason_why_healthier", "Better nutritional profile"),
+                "image_url": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=60"
             })
-
-    # Sort: same category first, then by health score descending
-    recommendations.sort(key=lambda x: (-x["same_category"], -x["health_score"]))
-
-    # Return top 5
-    return recommendations[:5]
+        return recommendations
+    except:
+        return []
 
 
 def get_household_suggestions(member_type):
