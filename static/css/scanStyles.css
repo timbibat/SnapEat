@@ -1,137 +1,152 @@
-/* Styles for the food scanning interface. Includes camera viewport styling, capture button, and image preview area. */
+/*
+ * scanStyles.css
+ * Only styles that Bootstrap utility classes cannot express:
+ * - Brand colours / CSS custom properties
+ * - Specific border-radii, pixel dimensions, backgrounds
+ * - Animations and transitions
+ * Everything else (flex, spacing, display, position) is done with Bootstrap in the HTML.
+ */
+
 :root {
-    --appBgColor: #f4f4f4;
-    --appThemeGreen: #a5b974;
-    --appThemeOrange: #de8836;
+    --appBgColor:      #f2f2f2;
+    --appThemeGreen:   #a5b974;
+    --appThemeOrange:  #de8836;
 }
 
+/* ── Base ─────────────────────────────────────────────────── */
 .scanBody {
     background-color: var(--appBgColor);
-    margin: 0;
-    padding: 0;
-    overflow: hidden; /* Prevent scrolling, keeps app-like feel */
 }
 
-/* Top Decoration Curve */
-.topDecorationContainer {
-    width: 100%;
-    height: 80px;
-    overflow: hidden;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 10;
-}
-
-.topDecorationCurve {
+/* ── Header ───────────────────────────────────────────────── */
+.scanHeader {
     background-color: var(--appThemeGreen);
-    height: 120px;
-    width: 150%;
-    margin-left: -25%; /* Centers the wide curve */
-    border-radius: 0 0 50% 50%;
-    transform: translateY(-50px);
+    border-radius: 0 0 32px 32px;
+    height: 72px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
 }
 
-/* Camera Area */
-.cameraMainArea {
-    padding: 60px 0; /* Add space for top/bottom fixed elements */
+.snapeatLogo {
+    height: 38px;
+    width: auto;
+    object-fit: contain;
 }
 
+/* ── Camera Area ──────────────────────────────────────────── */
 .cameraPreview {
-    width: calc(100% - 60px);
-    height: 60vh;
-    max-height: 600px;
     object-fit: cover;
-    background-color: #e0e0e0;
-    /* Optional: Slight border radius to soften the video edges if it doesn't bleed */
-    border-radius: 4px; 
+    border-radius: 24px;
+    background-color: #d8d8d8;
 }
 
-.focusOverlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none; /* Crucial: Allows clicks to pass through to the video if needed later */
-}
-
-/* Bottom Controls */
+/* ── Bottom Controls ──────────────────────────────────────── */
 .bottomControlsContainer {
     background-color: var(--appThemeGreen);
-    border-radius: 70px 70px 0 0;
-    padding: 0 40px;
-    height: 22vh;
-    min-height: 140px;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    z-index: 10;
+    border-radius: 40px 40px 0 0;
+    height: 130px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.10);
 }
 
+/* Gallery thumbnail */
 .uploadLabel {
     cursor: pointer;
     background-color: white;
-    border-radius: 18px;
-    padding: 4px;
-    width: 65px;
-    height: 65px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: transform 0.2s ease;
+    border-radius: 16px;
+    width: 60px;
+    height: 60px;
+    overflow: hidden;
+    padding: 3px;
+    transition: transform 0.18s ease;
 }
 
-.uploadLabel:active {
-    transform: scale(0.95);
-}
+.uploadLabel:active { transform: scale(0.93); }
 
 .galleryIcon {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 14px;
+    border-radius: 13px;
 }
 
-/* Capture Button Styles */
+/* Capture button */
 .captureBtn {
     background-color: white;
-    border: none;
     border-radius: 50%;
-    width: 85px;
-    height: 85px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 82px;
+    height: 82px;
     cursor: pointer;
-    padding: 0;
-    transition: transform 0.2s ease;
+    transition: transform 0.18s ease;
 }
 
-.captureBtn:active {
-    transform: scale(0.95);
-}
+.captureBtn:active { transform: scale(0.94); }
 
 .captureBtnInner {
     background-color: var(--appThemeOrange);
-    border-radius: 50%;
-    width: 65px;
-    height: 65px;
+    width: 62px;
+    height: 62px;
 }
 
-/* Switch Camera Button */
+/* Switch camera button */
 .switchCameraBtn {
-    background: transparent;
-    border: none;
+    width: 60px;
+    height: 60px;
     cursor: pointer;
-    width: 65px;
-    height: 65px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: transform 0.2s ease;
+    transition: transform 0.18s ease;
 }
 
-.switchCameraBtn:active {
-    transform: scale(0.95) rotate(45deg);
+.switchCameraBtn:active { transform: scale(0.93) rotate(45deg); }
+
+/* ── Loading Overlay ──────────────────────────────────────── */
+.loadingOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(164, 185, 116, 0.30);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    animation: overlayFadeIn 0.25s ease forwards;
 }
+
+.loadingOverlay[hidden] { display: none !important; }
+
+@keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.loadingCard {
+    background: rgba(255, 255, 255, 0.90);
+    border-radius: 28px;
+    padding: 40px 48px;
+    gap: 12px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+    animation: cardPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes cardPop {
+    from { transform: scale(0.85); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+
+.loadingSpinnerRing {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 6px solid rgba(165, 185, 116, 0.25);
+}
+
+.loadingSpinnerArc {
+    inset: -6px;
+    border-radius: 50%;
+    border: 6px solid transparent;
+    border-top-color: var(--appThemeOrange);
+    border-right-color: var(--appThemeGreen);
+    animation: spinnerRotate 0.9s linear infinite;
+}
+
+@keyframes spinnerRotate {
+    to { transform: rotate(360deg); }
+}
+
+.loadingTitle   { font-size: 1.15rem; letter-spacing: -0.01em; color: #3a3a3a; }
+.loadingSubtitle { font-size: 0.82rem; }
