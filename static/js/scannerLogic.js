@@ -1,14 +1,15 @@
 /**
  * Handles camera access, image capture, and image data preparation for food analysis.
+ * Uses Puter.js (gpt-5.4-nano) for frontend AI identification.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const video            = document.getElementById('cameraPreview');
-    const captureBtn       = document.getElementById('captureBtn');
-    const switchCameraBtn  = document.getElementById('switchCameraBtn');
+    const video = document.getElementById('cameraPreview');
+    const captureBtn = document.getElementById('captureBtn');
+    const switchCameraBtn = document.getElementById('switchCameraBtn');
     const imageUploadInput = document.getElementById('imageUploadInput');
-    const loadingOverlay   = document.getElementById('loadingOverlay');
+    const loadingOverlay = document.getElementById('loadingOverlay');
 
     // Create canvas if not provided by HTML
     let canvas = document.getElementById('captureCanvas');
@@ -19,30 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(canvas);
     }
 
-    let currentStream    = null;
+    let currentStream = null;
     let usingFrontCamera = false;
 
-    // ── Overlay helpers ─────────────────────────────────────
-    function showLoading() {
-        if (loadingOverlay) {
-            loadingOverlay.hidden = false;
-        }
-        // Prevent any interaction while processing
-        if (captureBtn)       captureBtn.disabled = true;
-        if (switchCameraBtn)  switchCameraBtn.disabled = true;
-        if (imageUploadInput) imageUploadInput.disabled = true;
-    }
-
-    function hideLoading() {
-        if (loadingOverlay) {
-            loadingOverlay.hidden = true;
-        }
-        if (captureBtn)       captureBtn.disabled = false;
-        if (switchCameraBtn)  switchCameraBtn.disabled = false;
-        if (imageUploadInput) imageUploadInput.disabled = false;
-    }
-
-    // ── Camera Initialization ────────────────────────────────
+    // --- Camera Initialization ---
     async function startCamera() {
         if (!video) return;
 
@@ -65,72 +46,119 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         } catch (error) {
             console.error("Camera access error:", error);
-            alert(`Could not access camera.\nError: ${error.name}\n\nTip: Ensure you have granted permission and are not using the camera in another app.`);
+            alert(`Could not access camera.\nError: ${error.name}\n\nTip: Ensure you have granted permission.`);
         }
     }
 
-    // ── Image Capture ────────────────────────────────────────
+    // --- UI Controls ---
+    function showLoading(show) {
+        if (loadingOverlay) {
+            loadingOverlay.hidden = !show;
+        }
+        if (captureBtn) {
+            captureBtn.disabled = show;
+            captureBtn.style.opacity = show ? "0.5" : "1";
+        }
+    }
+
+    // --- Image Capture ---
     function captureImage() {
         if (!video || !currentStream) {
             alert("Camera is not ready.");
             return;
         }
 
-        showLoading();
-
         const context = canvas.getContext('2d');
-        canvas.width  = video.videoWidth  || 640;
+        canvas.width = video.videoWidth || 640;
         canvas.height = video.videoHeight || 480;
-
+        
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
         canvas.toBlob((blob) => {
             if (blob) {
                 uploadFoodImage(blob);
-            } else {
-                hideLoading();
             }
         }, 'image/jpeg', 0.85);
     }
 
-    // ── Upload Logic ─────────────────────────────────────────
+    // --- Upload Logic ---
     async function uploadFoodImage(imageBlob, name = null) {
-        const formData = new FormData();
-        formData.append('food_image', imageBlob, 'capture.jpg');
-
         if (name) {
-            formData.append('food_name', name);
+            // If name is already known (from file upload), skip AI and send to backend
+            sendToBackend(imageBlob, name);
+            return;
         }
 
         try {
+            // Show the "Analyzing..." spinner
+            showLoading(true);
+
+            // Convert Blob to Data URL for Puter.js
+            const reader = new FileReader();
+            reader.readAsDataURL(imageBlob);
+            reader.onloadend = async () => {
+                const dataUrl = reader.result;
+                
+                console.log("Analyzing with Puter AI (gpt-5.4-nano)...");
+                
+                // Call Puter.js AI
+                puter.ai.chat(
+                    "Identify the primary food item in this image. Return ONLY the name of the food (e.g., 'Apple', 'Pizza').",
+                    dataUrl,
+                    { model: "gpt-5.4-nano" }
+                )
+                .then(response => {
+                    const identifiedName = response.toString().trim().toLowerCase().replace(".", "");
+                    console.log("Puter identified:", identifiedName);
+                    
+                    // Send identified name to backend for nutrition data
+                    sendToBackend(imageBlob, identifiedName);
+                })
+                .catch(err => {
+                    console.error("Puter Error:", err);
+                    alert("AI Analysis failed. Please try again.");
+                    showLoading(false);
+                });
+            };
+
+        } catch (error) {
+            console.error("Upload error:", error);
+            alert("Error: " + error.message);
+            showLoading(false);
+        }
+    }
+
+    async function sendToBackend(imageBlob, identifiedName) {
+        try {
+            const formData = new FormData();
+            formData.append('food_image', imageBlob, 'capture.jpg');
+            if (identifiedName) {
+                formData.append('food_name', identifiedName);
+            }
+
             const response = await fetch('/api/food/identify', {
                 method: 'POST',
                 body: formData
             });
 
             const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Failed to log food.");
 
-            if (!response.ok) {
-                throw new Error(data.message || "Failed to identify food.");
-            }
-
-            // Stop camera before navigating away
+            // Stop camera and redirect
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
             }
-
             if (data.food_id) {
                 window.location.href = `/analysis/${data.food_id}`;
             }
-
-        } catch (error) {
-            console.error("Upload error:", error);
-            hideLoading();
-            alert("Error: " + error.message);
+        } catch (err) {
+            console.error("Backend error:", err);
+            alert("Food identified, but failed to retrieve nutrition data.");
+            showLoading(false);
         }
     }
 
-    // ── Event Listeners ──────────────────────────────────────
+    // --- Event Listeners ---
     if (video) {
         startCamera();
     }
@@ -150,15 +178,8 @@ document.addEventListener('DOMContentLoaded', () => {
         imageUploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
-                showLoading();
-                // If it's a generic capture name, don't send it so AI can identify
-                const lowerName = file.name.toLowerCase();
-                if (lowerName.includes('image') || lowerName.includes('capture') || lowerName.includes('img')) {
-                    uploadFoodImage(file);
-                } else {
-                    const cleanName = file.name.split('.')[0];
-                    uploadFoodImage(file, cleanName);
-                }
+                // ALWAYS use AI identification for uploads to get clean names
+                uploadFoodImage(file);
             }
         });
     }

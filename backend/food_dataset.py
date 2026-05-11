@@ -558,7 +558,26 @@ def get_food_by_name(food_name):
     if kaggle_result:
         return kaggle_result
 
-    return None
+    # 4. FINAL DYNAMIC FALLBACK: If food not in DB or CSV, create a "General" profile
+    return {
+        "name": food_name.title(),
+        "category": "General",
+        "image_url": "https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=500&q=80",
+        "nutrition": {
+            "calories": 100, "carbs": 15, "sugars": 8, "fiber": 3, "protein": 2, "fat": 1
+        },
+        "health_benefits": [
+            "Provides essential energy",
+            "Contains natural vitamins and minerals",
+            "Part of a balanced diet"
+        ],
+        "age_sensitivity": {
+            "kid": {"rating": "Good", "tips": ["Always wash fresh produce", "Balanced nutrition"]},
+            "teen": {"rating": "Good", "tips": ["Steady energy source"]},
+            "adult": {"rating": "Good", "tips": ["Part of a healthy lifestyle"]},
+            "elderly": {"rating": "Good", "tips": ["Easy to digest"]}
+        }
+    }
 
 
 def get_all_food_names():

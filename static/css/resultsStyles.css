@@ -290,4 +290,4 @@ body {
     --app-dark-green: #d63031;
     --app-light-green: #ffdddd;
 }
-.theme-unhealthy .rating-dot { background-color: var(--app-green); }
+.theme-unhealthy .rating-dot { background-color: var(--app-green); }
