@@ -4,10 +4,11 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const video = document.getElementById('cameraPreview');
-    const captureBtn = document.getElementById('captureBtn');
-    const switchCameraBtn = document.getElementById('switchCameraBtn');
+    const video            = document.getElementById('cameraPreview');
+    const captureBtn       = document.getElementById('captureBtn');
+    const switchCameraBtn  = document.getElementById('switchCameraBtn');
     const imageUploadInput = document.getElementById('imageUploadInput');
+    const loadingOverlay   = document.getElementById('loadingOverlay');
 
     // Create canvas if not provided by HTML
     let canvas = document.getElementById('captureCanvas');
@@ -18,10 +19,30 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(canvas);
     }
 
-    let currentStream = null;
+    let currentStream    = null;
     let usingFrontCamera = false;
 
-    // --- Camera Initialization ---
+    // ── Overlay helpers ─────────────────────────────────────
+    function showLoading() {
+        if (loadingOverlay) {
+            loadingOverlay.hidden = false;
+        }
+        // Prevent any interaction while processing
+        if (captureBtn)       captureBtn.disabled = true;
+        if (switchCameraBtn)  switchCameraBtn.disabled = true;
+        if (imageUploadInput) imageUploadInput.disabled = true;
+    }
+
+    function hideLoading() {
+        if (loadingOverlay) {
+            loadingOverlay.hidden = true;
+        }
+        if (captureBtn)       captureBtn.disabled = false;
+        if (switchCameraBtn)  switchCameraBtn.disabled = false;
+        if (imageUploadInput) imageUploadInput.disabled = false;
+    }
+
+    // ── Camera Initialization ────────────────────────────────
     async function startCamera() {
         if (!video) return;
 
@@ -48,43 +69,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Image Capture ---
+    // ── Image Capture ────────────────────────────────────────
     function captureImage() {
         if (!video || !currentStream) {
             alert("Camera is not ready.");
             return;
         }
 
+        showLoading();
+
         const context = canvas.getContext('2d');
-        canvas.width = video.videoWidth || 640;
+        canvas.width  = video.videoWidth  || 640;
         canvas.height = video.videoHeight || 480;
-        
+
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
         canvas.toBlob((blob) => {
             if (blob) {
                 uploadFoodImage(blob);
+            } else {
+                hideLoading();
             }
         }, 'image/jpeg', 0.85);
     }
 
-    // --- Upload Logic ---
+    // ── Upload Logic ─────────────────────────────────────────
     async function uploadFoodImage(imageBlob, name = null) {
         const formData = new FormData();
         formData.append('food_image', imageBlob, 'capture.jpg');
-        
+
         if (name) {
             formData.append('food_name', name);
         }
-        // NOTE: We don't send a default 'apple' anymore, so the AI can identify it!
 
         try {
-            // Show some feedback
-            if (captureBtn) {
-                captureBtn.disabled = true;
-                captureBtn.style.opacity = "0.5";
-            }
-
             const response = await fetch('/api/food/identify', {
                 method: 'POST',
                 body: formData
@@ -96,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.message || "Failed to identify food.");
             }
 
-            // Stop camera
+            // Stop camera before navigating away
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
             }
@@ -107,15 +125,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Upload error:", error);
+            hideLoading();
             alert("Error: " + error.message);
-            if (captureBtn) {
-                captureBtn.disabled = false;
-                captureBtn.style.opacity = "1";
-            }
         }
     }
 
-    // --- Event Listeners ---
+    // ── Event Listeners ──────────────────────────────────────
     if (video) {
         startCamera();
     }
@@ -135,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
         imageUploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
+                showLoading();
                 // If it's a generic capture name, don't send it so AI can identify
                 const lowerName = file.name.toLowerCase();
                 if (lowerName.includes('image') || lowerName.includes('capture') || lowerName.includes('img')) {
