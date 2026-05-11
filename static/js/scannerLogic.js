@@ -156,12 +156,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!puter.auth.isSignedIn()) {
                     console.warn("Puter: User not signed in. Attempting to sign in...");
                     showLoading(false);
-                    alert("Please sign in to Puter to continue analysis.");
+                    
+                    const isMedian = navigator.userAgent.includes('GoNative') || window.gonative;
+                    let msg = "Please sign in to Puter to continue analysis.";
+                    if (isMedian) {
+                        msg += "\n\nTip for Median.co: If the login page is blank, please ensure 'puter.com' is added to your 'Internal Domains' in the Median dashboard.";
+                    }
+                    
+                    alert(msg);
                     puter.auth.signIn().then(() => {
                         alert("Signed in! Please click capture again.");
                     }).catch(err => {
                         console.error("Puter Sign-in Error:", err);
-                        alert("Failed to sign in to Puter. Please try again.");
+                        alert("Failed to sign in to Puter. If you're on a mobile app, try opening this in a regular browser first.");
                     });
                     return;
                 }

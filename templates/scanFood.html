@@ -112,7 +112,6 @@
 
         function checkPuterAuth() {
             if (PUTER_AUTH_TOKEN && PUTER_AUTH_TOKEN !== "None") {
-                // Sign in with token - this is the "Golden Fix" for redirects
                 puter.auth.signInWithToken(PUTER_AUTH_TOKEN).then(() => {
                     console.log("Puter: Silently signed in with token.");
                 }).catch(err => {
@@ -120,6 +119,11 @@
                 });
             } else {
                 console.warn("Puter Auth: No token found. Login may be required.");
+                // Detect Median.co / GoNative
+                const isMedian = navigator.userAgent.includes('GoNative') || window.gonative;
+                if (isMedian) {
+                    console.info("Median.co detected. If the login popup is blank, ensure 'puter.com' is in your Internal Domains list.");
+                }
             }
         }
 
