@@ -1,7 +1,7 @@
-# FoodAi - Software-Based Food Scanning System
+# SnapEat - Software-Based Food Scanning System
 
 ## Project Overview
-FoodAi is a comprehensive system that identifies food items, displays nutritional information, health classifications, and provides smart recommendations.
+SnapEat is a comprehensive system that identifies food items, displays nutritional information, health classifications, and provides smart recommendations.
 
 ## Team Workflow & Responsibilities
 
