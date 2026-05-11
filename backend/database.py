@@ -9,8 +9,16 @@ import os
 import json
 from datetime import datetime, timedelta
 
-# Database file location (next to app.py)
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "snapeat.db")
+# Detect if running on Vercel
+IS_VERCEL = os.environ.get('VERCEL') == '1'
+
+# Database file location
+if IS_VERCEL:
+    # Use /tmp for writable database on Vercel
+    DB_PATH = "/tmp/snapeat.db"
+else:
+    # Local development path
+    DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "snapeat.db")
 
 
 def get_connection():
@@ -22,48 +30,63 @@ def get_connection():
 
 def init_db():
     """Initialize the database tables if they don't exist."""
-    conn = get_connection()
-    cursor = conn.cursor()
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS food_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT NOT NULL DEFAULT 'default',
-            food_name TEXT NOT NULL,
-            category TEXT,
-            calories REAL,
-            carbs REAL,
-            sugars REAL,
-            fiber REAL,
-            protein REAL,
-            fat REAL,
-            health_status TEXT,
-            health_score INTEGER,
-            scanned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS food_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL DEFAULT 'default',
+                food_name TEXT NOT NULL,
+                category TEXT,
+                calories REAL,
+                carbs REAL,
+                sugars REAL,
+                fiber REAL,
+                protein REAL,
+                fat REAL,
+                health_status TEXT,
+                health_score INTEGER,
+                scanned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS user_profiles (
-            user_id TEXT PRIMARY KEY,
-            name TEXT,
-            age_group TEXT DEFAULT 'adult',
-            daily_calorie_goal REAL DEFAULT 2000,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS user_profiles (
+                user_id TEXT PRIMARY KEY,
+                name TEXT,
+                age_group TEXT DEFAULT 'adult',
+                daily_calorie_goal REAL DEFAULT 2000,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            email TEXT PRIMARY KEY,
-            password TEXT NOT NULL,
-            name TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                email TEXT PRIMARY KEY,
+                password TEXT NOT NULL,
+                name TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
 
-    conn.commit()
-    conn.close()
+        conn.commit()
+        conn.close()
+        print(f"Database initialized at: {DB_PATH}")
+    except Exception as e:
+        print(f"Database Error: {e}")
+
+def maybe_init_db():
+    """Initialize the database only if necessary."""
+    if IS_VERCEL:
+        # On Vercel, /tmp is wiped on cold start, so we always try to init if not exists
+        if not os.path.exists(DB_PATH):
+            init_db()
+    else:
+        # Local development: only init if DB file is missing
+        if not os.path.exists(DB_PATH):
+            init_db()
 
 
 def register_user(name, email, password):
@@ -286,5 +309,5 @@ def get_recent_scans(user_id, limit=10):
     return [dict(row) for row in rows]
 
 
-# Initialize database on module import
-init_db()
+# Initialize database if needed on module import
+maybe_init_db()
