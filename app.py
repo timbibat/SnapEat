@@ -10,10 +10,7 @@ from backend.food_dataset import get_food_by_name
 # Initialize Flask app
 # Vercel looks for 'app' as the entry point
 app = Flask(__name__)
-secret_key = os.environ.get('SECRET_KEY')
-if not secret_key:
-    raise RuntimeError("SECRET_KEY environment variable must be set")
-app.secret_key = secret_key
+app.secret_key = os.environ.get('SECRET_KEY', 'snapeat_secret_key_123')
 
 # ── Page Routes ──────────────────────────────────────────────────────────────
 
@@ -174,15 +171,9 @@ def identify_food():
             "log_id": log_id
         })
 
-    error_message = (
-        f"Food '{food_name}' not found in database."
-        if food_name
-        else "AI could not identify the food from the uploaded image."
-    )
-
     return jsonify({
         "status": "error",
-        "message": error_message,
+        "message": f"Food '{food_name}' not found in database.",
         "available_foods": get_available_foods()
     }), 404
 
