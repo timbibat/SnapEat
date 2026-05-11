@@ -1,218 +1,206 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analysis Result - SnapEat</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/globalStyles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/resultsStyles.css') }}">
-    <!-- Using FontAwesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-</head>
+{% block title %}Analysis Result - SnapEat{% endblock %}
 
-<body class="bg-light">
-    <div class="analysis-container {% if classification and classification.health_status == 'Unhealthy' %}theme-unhealthy{% else %}theme-healthy{% endif %} mx-auto position-relative shadow-sm">
-        
-        <!-- Header -->
-        <div class="header-curve"></div>
-        <div class="header-content">
-            <a href="/" class="text-white text-decoration-none fs-3 ms-3"><i class="fa-solid fa-arrow-left"></i></a>
-            <h1 class="text-white m-0 text-uppercase display-font fs-3 ms-4">ANALYSIS RESULT</h1>
-        </div>
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/resultsStyles.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
 
-        <!-- Food Image -->
-        <div class="food-image-wrapper">
-            <img src="{{ food.image_url if food else 'https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?auto=format&fit=crop&w=500&q=60' }}"
-                alt="{{ food.name if food else 'Food' }}">
-        </div>
+{% block body_class %}bg-light{% endblock %}
 
-        <!-- Food Name -->
-        <h2 class="food-name display-font">{{ food.name if food else 'APPLE' }}</h2>
-
-        <!-- Nutrition Grid -->
-        <div class="container px-4 mb-4">
-            <div class="row row-cols-3 g-3">
-                <div class="col">
-                    <div class="nutrition-card">
-                        <div class="nutrition-value display-font">{{ food.nutrition.calories if food else '95' }} kcal</div>
-                        <div class="nutrition-label">Calories</div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="nutrition-card">
-                        <div class="nutrition-value display-font">{{ food.nutrition.carbs if food else '25' }} g</div>
-                        <div class="nutrition-label">Carbohydrates</div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="nutrition-card">
-                        <div class="nutrition-value display-font">{{ food.nutrition.sugars if food else '19' }} g</div>
-                        <div class="nutrition-label">Sugars</div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="nutrition-card">
-                        <div class="nutrition-value display-font">{{ food.nutrition.fiber if food else '4' }} g</div>
-                        <div class="nutrition-label">Dietary Fiber</div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="nutrition-card">
-                        <div class="nutrition-value display-font">{{ food.nutrition.protein if food else '0.5' }} g</div>
-                        <div class="nutrition-label">Protein</div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="nutrition-card">
-                        <div class="nutrition-value display-font">{{ food.nutrition.fat if food else '0.3' }} g</div>
-                        <div class="nutrition-label">Fat</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Health Status Circle -->
-        <div class="status-circle-container">
-            <div class="status-circle">
-                <span class="status-text display-font">{{ classification.health_status if classification else 'HEALTHY' }}</span>
-            </div>
-        </div>
-
-        <!-- Health Benefits Card -->
-        <div class="benefits-card">
-            <h3 class="benefits-title display-font fs-5">Health Benefits</h3>
-            <ul class="benefits-list">
-                {% if food and food.health_benefits %}
-                    {% for benefit in food.health_benefits %}
-                        <li>{{ benefit }}</li>
-                    {% endfor %}
-                {% else %}
-                    <li>Good for digestion (high fiber)</li>
-                    <li>Supports immune system (Vitamin C)</li>
-                    <li>Helps heart health</li>
-                    <li>Low in calories, good for weight management</li>
-                {% endif %}
-            </ul>
-        </div>
-
-        <!-- Age Sensitivity Section -->
-        <h3 class="section-title display-font fs-5">Age Sensitivity</h3>
-        
-        <div class="container px-4">
-            <div class="row g-4 pb-5">
-                <!-- Kid Card -->
-                <div class="col-6 mt-5">
-                    <div class="age-card shadow-sm">
-                        <div class="age-icon-wrapper">
-                            <i class="fa-solid fa-child text-white fs-2"></i>
-                        </div>
-                        <div class="age-name display-font">Kid</div>
-                        <div class="age-rating-row">
-                            <div class="rating-dot"></div>
-                            <div class="rating-text text-uppercase">{{ classification.age_sensitivity.kid.rating if classification else 'Highly Recommended' }}</div>
-                        </div>
-                        <ul class="age-tips">
-                            {% if classification and classification.age_sensitivity.kid.tips %}
-                                {% for tip in classification.age_sensitivity.kid.tips %}
-                                    <li><i class="fa-solid fa-lightbulb text-warning"></i> {{ tip }}</li>
-                                {% endfor %}
-                            {% else %}
-                                <li><i class="fa-solid fa-lightbulb text-warning"></i> Supports Growth and Immunity</li>
-                                <li>Good for teeth</li>
-                                <li>Brain Support</li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Teen Card -->
-                <div class="col-6 mt-5">
-                    <div class="age-card shadow-sm">
-                        <div class="age-icon-wrapper">
-                            <i class="fa-solid fa-child-reaching text-white fs-2"></i>
-                        </div>
-                        <div class="age-name display-font">Teen</div>
-                        <div class="age-rating-row">
-                            <div class="rating-dot"></div>
-                            <div class="rating-text text-uppercase">{{ classification.age_sensitivity.teen.rating if classification else 'Highly Recommended' }}</div>
-                        </div>
-                        <ul class="age-tips">
-                            {% if classification and classification.age_sensitivity.teen.tips %}
-                                {% for tip in classification.age_sensitivity.teen.tips %}
-                                    <li><i class="fa-solid fa-lightbulb text-warning"></i> {{ tip }}</li>
-                                {% endfor %}
-                            {% else %}
-                                <li><i class="fa-solid fa-lightbulb text-warning"></i> Weight Management</li>
-                                <li>Skin Health</li>
-                                <li>Focus & Memory</li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Adult Card -->
-                <div class="col-6 mt-5">
-                    <div class="age-card shadow-sm">
-                        <div class="age-icon-wrapper">
-                            <i class="fa-solid fa-user-group text-white fs-3"></i>
-                        </div>
-                        <div class="age-name display-font">Adult</div>
-                        <div class="age-rating-row">
-                            <div class="rating-dot"></div>
-                            <div class="rating-text text-uppercase">{{ classification.age_sensitivity.adult.rating if classification else 'Highly Recommended' }}</div>
-                        </div>
-                        <ul class="age-tips">
-                            {% if classification and classification.age_sensitivity.adult.tips %}
-                                {% for tip in classification.age_sensitivity.adult.tips %}
-                                    <li><i class="fa-solid fa-lightbulb text-warning"></i> {{ tip }}</li>
-                                {% endfor %}
-                            {% else %}
-                                <li><i class="fa-solid fa-lightbulb text-warning"></i> Blood Sugar Control</li>
-                                <li>Weight Control</li>
-                                <li>Gut Health</li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Elderly Card -->
-                <div class="col-6 mt-5">
-                    <div class="age-card shadow-sm">
-                        <div class="age-icon-wrapper">
-                            <i class="fa-solid fa-person-cane text-white fs-2"></i>
-                        </div>
-                        <div class="age-name display-font">Elderly</div>
-                        <div class="age-rating-row">
-                            <div class="rating-dot"></div>
-                            <div class="rating-text text-uppercase">{{ classification.age_sensitivity.elderly.rating if classification else 'Highly Recommended' }}</div>
-                        </div>
-                        <ul class="age-tips">
-                            {% if classification and classification.age_sensitivity.elderly.tips %}
-                                {% for tip in classification.age_sensitivity.elderly.tips %}
-                                    <li><i class="fa-solid fa-lightbulb text-warning"></i> {{ tip }}</li>
-                                {% endfor %}
-                            {% else %}
-                                <li><i class="fa-solid fa-lightbulb text-warning"></i> Supports Digestion</li>
-                                <li>Heart protection</li>
-                                <li>Bone Support</li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer Decoration -->
-        <div class="footer-curve"></div>
+{% block content %}
+<div class="analysis-container {% if classification and classification.health_status == 'Unhealthy' %}theme-unhealthy{% else %}theme-healthy{% endif %} mx-auto position-relative shadow-sm">
+    <!-- Header -->
+    <div class="header-curve"></div>
+    <div class="header-content">
+        <a href="/" class="text-white text-decoration-none fs-3 ms-3"><i class="fa-solid fa-arrow-left"></i></a>
+        <h1 class="text-white m-0 text-uppercase display-font fs-3 ms-4">ANALYSIS RESULT</h1>
     </div>
 
-    <!-- Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    <!-- Food Image -->
+    <div class="food-image-wrapper">
+        <img src="{{ food.image_url if food else 'https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?auto=format&fit=crop&w=500&q=60' }}"
+            alt="{{ food.name if food else 'Food' }}">
+    </div>
 
-</html>
+    <!-- Food Name -->
+    <h2 class="food-name display-font">{{ food.name if food else 'APPLE' }}</h2>
+
+    <!-- Nutrition Grid -->
+    <div class="container px-4 mb-4">
+        <div class="row row-cols-3 g-3">
+            <div class="col">
+                <div class="nutrition-card">
+                    <div class="nutrition-value display-font">{{ food.nutrition.calories if food else '95' }} kcal</div>
+                    <div class="nutrition-label">Calories</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="nutrition-card">
+                    <div class="nutrition-value display-font">{{ food.nutrition.carbs if food else '25' }} g</div>
+                    <div class="nutrition-label">Carbohydrates</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="nutrition-card">
+                    <div class="nutrition-value display-font">{{ food.nutrition.sugars if food else '19' }} g</div>
+                    <div class="nutrition-label">Sugars</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="nutrition-card">
+                    <div class="nutrition-value display-font">{{ food.nutrition.fiber if food else '4' }} g</div>
+                    <div class="nutrition-label">Dietary Fiber</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="nutrition-card">
+                    <div class="nutrition-value display-font">{{ food.nutrition.protein if food else '0.5' }} g</div>
+                    <div class="nutrition-label">Protein</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="nutrition-card">
+                    <div class="nutrition-value display-font">{{ food.nutrition.fat if food else '0.3' }} g</div>
+                    <div class="nutrition-label">Fat</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Status Circle -->
+    <div class="status-circle-container">
+        <div class="status-circle">
+            <span class="status-text display-font">{{ classification.health_status if classification else 'HEALTHY' }}</span>
+        </div>
+    </div>
+
+    <!-- Health Benefits Card -->
+    <div class="benefits-card">
+        <h3 class="benefits-title display-font fs-5">Health Benefits</h3>
+        <ul class="benefits-list">
+            {% if food and food.health_benefits %}
+                {% for benefit in food.health_benefits %}
+                    <li>{{ benefit }}</li>
+                {% endfor %}
+            {% else %}
+                <li>Good for digestion (high fiber)</li>
+                <li>Supports immune system (Vitamin C)</li>
+                <li>Helps heart health</li>
+                <li>Low in calories, good for weight management</li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- Age Sensitivity Section -->
+    <h3 class="section-title display-font fs-5">Age Sensitivity</h3>
+
+    <div class="container px-4">
+        <div class="row g-4 pb-5">
+            <!-- Kid Card -->
+            <div class="col-6 mt-5">
+                <div class="age-card shadow-sm">
+                    <div class="age-icon-wrapper">
+                        <i class="fa-solid fa-child text-white fs-2"></i>
+                    </div>
+                    <div class="age-name display-font">Kid</div>
+                    <div class="age-rating-row">
+                        <div class="rating-dot"></div>
+                        <div class="rating-text text-uppercase">{{ classification.age_sensitivity.kid.rating if classification else 'Highly Recommended' }}</div>
+                    </div>
+                    <ul class="age-tips">
+                        {% if classification and classification.age_sensitivity.kid.tips %}
+                            {% for tip in classification.age_sensitivity.kid.tips %}
+                                <li><i class="fa-solid fa-lightbulb text-warning"></i> {{ tip }}</li>
+                            {% endfor %}
+                        {% else %}
+                            <li><i class="fa-solid fa-lightbulb text-warning"></i> Supports Growth and Immunity</li>
+                            <li>Good for teeth</li>
+                            <li>Brain Support</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Teen Card -->
+            <div class="col-6 mt-5">
+                <div class="age-card shadow-sm">
+                    <div class="age-icon-wrapper">
+                        <i class="fa-solid fa-child-reaching text-white fs-2"></i>
+                    </div>
+                    <div class="age-name display-font">Teen</div>
+                    <div class="age-rating-row">
+                        <div class="rating-dot"></div>
+                        <div class="rating-text text-uppercase">{{ classification.age_sensitivity.teen.rating if classification else 'Highly Recommended' }}</div>
+                    </div>
+                    <ul class="age-tips">
+                        {% if classification and classification.age_sensitivity.teen.tips %}
+                            {% for tip in classification.age_sensitivity.teen.tips %}
+                                <li><i class="fa-solid fa-lightbulb text-warning"></i> {{ tip }}</li>
+                            {% endfor %}
+                        {% else %}
+                            <li><i class="fa-solid fa-lightbulb text-warning"></i> Weight Management</li>
+                            <li>Skin Health</li>
+                            <li>Focus & Memory</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Adult Card -->
+            <div class="col-6 mt-5">
+                <div class="age-card shadow-sm">
+                    <div class="age-icon-wrapper">
+                        <i class="fa-solid fa-user-group text-white fs-3"></i>
+                    </div>
+                    <div class="age-name display-font">Adult</div>
+                    <div class="age-rating-row">
+                        <div class="rating-dot"></div>
+                        <div class="rating-text text-uppercase">{{ classification.age_sensitivity.adult.rating if classification else 'Highly Recommended' }}</div>
+                    </div>
+                    <ul class="age-tips">
+                        {% if classification and classification.age_sensitivity.adult.tips %}
+                            {% for tip in classification.age_sensitivity.adult.tips %}
+                                <li><i class="fa-solid fa-lightbulb text-warning"></i> {{ tip }}</li>
+                            {% endfor %}
+                        {% else %}
+                            <li><i class="fa-solid fa-lightbulb text-warning"></i> Blood Sugar Control</li>
+                            <li>Weight Control</li>
+                            <li>Gut Health</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Elderly Card -->
+            <div class="col-6 mt-5">
+                <div class="age-card shadow-sm">
+                    <div class="age-icon-wrapper">
+                        <i class="fa-solid fa-person-cane text-white fs-2"></i>
+                    </div>
+                    <div class="age-name display-font">Elderly</div>
+                    <div class="age-rating-row">
+                        <div class="rating-dot"></div>
+                        <div class="rating-text text-uppercase">{{ classification.age_sensitivity.elderly.rating if classification else 'Highly Recommended' }}</div>
+                    </div>
+                    <ul class="age-tips">
+                        {% if classification and classification.age_sensitivity.elderly.tips %}
+                            {% for tip in classification.age_sensitivity.elderly.tips %}
+                                <li><i class="fa-solid fa-lightbulb text-warning"></i> {{ tip }}</li>
+                            {% endfor %}
+                        {% else %}
+                            <li><i class="fa-solid fa-lightbulb text-warning"></i> Supports Digestion</li>
+                            <li>Heart protection</li>
+                            <li>Bone Support</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Decoration -->
+    <div class="footer-curve"></div>
+</div>
+{% endblock %}

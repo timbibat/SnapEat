@@ -1,0 +1,74 @@
+body {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    font-family: 'Poppins', sans-serif;
+    overflow-x: hidden;
+}
+
+.hero-section {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.logo-text {
+    font-family: 'Lilita One', cursive;
+    font-size: 4rem;
+    color: #198754;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tagline {
+    font-size: 1.2rem;
+    color: #6c757d;
+    margin-bottom: 3rem;
+    max-width: 500px;
+}
+
+.scan-action-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+    max-width: 400px;
+    width: 100%;
+}
+
+.scan-action-card:hover {
+    transform: translateY(-10px);
+}
+
+.btn-scan-primary {
+    background: #198754;
+    color: white;
+    border: none;
+    padding: 1.2rem 2.5rem;
+    border-radius: 20px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    box-shadow: 0 10px 20px rgba(25, 135, 84, 0.3);
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-scan-primary:hover {
+    background: #157347;
+    transform: scale(1.02);
+    color: white;
+}
+
+.feature-icon {
+    font-size: 3rem;
+    color: #198754;
+    margin-bottom: 1.5rem;
+}

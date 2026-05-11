@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SnapEat{% endblock %}</title>
+    {% include "partials/head_assets.html" %}
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="{% block body_class %}{% endblock %}" {% block body_attrs %}{% endblock %}>
+    {% block content %}{% endblock %}
+
+    {% include "partials/common_scripts.html" %}
+    {% block vendor_scripts %}{% endblock %}
+    {% block page_scripts %}{% endblock %}
+</body>
+
+</html>
