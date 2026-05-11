@@ -1,5 +1,9 @@
 from flask import Flask, render_template, request, jsonify, session
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 from backend.analyzer import identify_food_item, get_nutrition_data, search_food_items, get_available_foods
 from backend.classifier import classify_health_status, calculate_health_score, get_full_classification
