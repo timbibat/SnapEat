@@ -14,8 +14,15 @@
 }
 
 /* ── Base ─────────────────────────────────────────────────── */
+html {
+    height: 100%;
+}
+
 .scanBody {
     background-color: var(--appBgColor);
+    height: 100vh;
+    height: 100svh;
+    height: 100dvh;
 }
 
 /* ── Header ───────────────────────────────────────────────── */
@@ -33,17 +40,25 @@
 }
 
 /* ── Camera Area ──────────────────────────────────────────── */
+.cameraMainArea {
+    min-height: 0;
+    padding: 14px 16px 10px;
+}
+
 .cameraPreview {
     object-fit: cover;
     border-radius: 24px;
     background-color: #d8d8d8;
+    max-height: 100%;
 }
 
 /* ── Bottom Controls ──────────────────────────────────────── */
 .bottomControlsContainer {
     background-color: var(--appThemeGreen);
     border-radius: 40px 40px 0 0;
-    height: 130px;
+    box-sizing: border-box;
+    height: calc(104px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.10);
 }
 
@@ -52,8 +67,8 @@
     cursor: pointer;
     background-color: white;
     border-radius: 16px;
-    width: 60px;
-    height: 60px;
+    width: 54px;
+    height: 54px;
     overflow: hidden;
     padding: 3px;
     transition: transform 0.18s ease;
@@ -72,8 +87,8 @@
 .captureBtn {
     background-color: white;
     border-radius: 50%;
-    width: 82px;
-    height: 82px;
+    width: 76px;
+    height: 76px;
     cursor: pointer;
     transition: transform 0.18s ease;
 }
@@ -82,19 +97,54 @@
 
 .captureBtnInner {
     background-color: var(--appThemeOrange);
-    width: 62px;
-    height: 62px;
+    width: 56px;
+    height: 56px;
 }
 
 /* Switch camera button */
 .switchCameraBtn {
-    width: 60px;
-    height: 60px;
+    width: 54px;
+    height: 54px;
     cursor: pointer;
     transition: transform 0.18s ease;
 }
 
 .switchCameraBtn:active { transform: scale(0.93) rotate(45deg); }
+
+@media (max-height: 700px) {
+    .scanHeader {
+        height: 64px;
+        border-radius: 0 0 28px 28px;
+    }
+
+    .snapeatLogo {
+        height: 34px;
+    }
+
+    .cameraMainArea {
+        padding: 12px 14px 8px;
+    }
+
+    .bottomControlsContainer {
+        height: calc(96px + env(safe-area-inset-bottom, 0px));
+        border-radius: 34px 34px 0 0;
+    }
+
+    .focusOverlay svg {
+        width: 190px;
+        height: 190px;
+    }
+
+    .captureBtn {
+        width: 70px;
+        height: 70px;
+    }
+
+    .captureBtnInner {
+        width: 52px;
+        height: 52px;
+    }
+}
 
 /* ── Loading Overlay ──────────────────────────────────────── */
 .loadingOverlay {
