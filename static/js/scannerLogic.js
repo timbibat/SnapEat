@@ -27,10 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
     async function startCamera() {
         if (!video) return;
 
-        // Security check: getUserMedia requires HTTPS or localhost
-        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-            console.error("Camera access blocked: Insecure context (requires HTTPS)");
-            alert("Security Error: Camera access requires an HTTPS connection. Please ensure your site is served over SSL.");
+        // 1. Security/Context Check
+        if (!navigator.mediaDevices && !navigator.webkitGetUserMedia && !navigator.mozGetUserMedia) {
+            alert("Error: Your browser or app does not support camera access. (Requires HTTPS)");
             return;
         }
 
@@ -39,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentStream.getTracks().forEach(track => track.stop());
         }
 
-        // Try high-resolution environment camera first
+        // 2. Try High-Res Environment Camera (Ideal for food scanning)
         const constraints = {
             video: {
                 facingMode: usingFrontCamera ? 'user' : { ideal: 'environment' },
@@ -51,20 +50,44 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             currentStream = await navigator.mediaDevices.getUserMedia(constraints);
             video.srcObject = currentStream;
-            video.onloadedmetadata = () => {
-                video.play().catch(e => console.error("Video play failed:", e));
-            };
+            video.play().catch(e => console.error("Video play failed:", e));
         } catch (error) {
-            console.warn("Primary camera constraints failed, trying fallback...", error);
+            console.warn("Primary camera failed, trying aggressive fallback...", error);
             
-            // FALLBACK: Try a very simple constraint if the first one fails
+            // 3. FALLBACK: Try a completely empty constraint (Most compatible)
             try {
-                currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = currentStream;
-                video.play();
+                // Support legacy prefixes if needed
+                const getUserMedia = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ||
+                                     navigator.webkitGetUserMedia ||
+                                     navigator.mozGetUserMedia;
+                
+                if (typeof getUserMedia === 'function') {
+                    // If using legacy, we need to bind context
+                    if (navigator.mediaDevices) {
+                        currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    } else {
+                        // Legacy callback-style wrapped in Promise
+                        currentStream = await new Promise((resolve, reject) => {
+                            getUserMedia.call(navigator, { video: true }, resolve, reject);
+                        });
+                    }
+                    video.srcObject = currentStream;
+                    video.play();
+                } else {
+                    throw new Error("No getUserMedia API found");
+                }
             } catch (fallbackError) {
-                console.error("Camera access error:", fallbackError);
-                alert(`Could not access camera.\n\nTips for Median.co/Mobile:\n1. Ensure your site uses HTTPS.\n2. Allow Camera permissions in your phone settings for the app.\n3. Make sure no other app is using the camera.`);
+                console.error("Final camera error:", fallbackError);
+                
+                let msg = `Could not access camera (${fallbackError.name}).\n\n`;
+                if (fallbackError.name === 'NotAllowedError' || fallbackError.name === 'PermissionDeniedError') {
+                    msg += "PERMISSION DENIED: Please go to your Phone Settings > Apps > SnapEat and enable Camera permissions.";
+                } else if (fallbackError.name === 'NotFoundError' || fallbackError.name === 'DevicesNotFoundError') {
+                    msg += "HARDWARE ERROR: No camera found or it's being used by another app.";
+                } else {
+                    msg += "Ensure you are using HTTPS and have granted permissions in your app settings.";
+                }
+                alert(msg);
             }
         }
     }
