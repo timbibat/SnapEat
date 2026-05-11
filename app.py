@@ -10,7 +10,10 @@ from backend.food_dataset import get_food_by_name
 # Initialize Flask app
 # Vercel looks for 'app' as the entry point
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'snapeat_secret_key_123')
+secret_key = os.environ.get('SECRET_KEY')
+if not secret_key:
+    raise RuntimeError("SECRET_KEY environment variable must be set")
+app.secret_key = secret_key
 
 # ── Page Routes ──────────────────────────────────────────────────────────────
 
