@@ -80,8 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // Show some feedback
-            if (captureBtn) captureBtn.disabled = true;
-            captureBtn.style.opacity = "0.5";
+            if (captureBtn) {
+                captureBtn.disabled = true;
+                captureBtn.style.opacity = "0.5";
+            }
 
             const response = await fetch('/api/food/identify', {
                 method: 'POST',
