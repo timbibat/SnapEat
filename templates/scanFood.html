@@ -105,10 +105,20 @@
     <!-- JS References -->
     <script src="https://js.puter.com/v2/"></script>
     <script>
-        // Inject App ID from Backend
-        const PUTER_APP_ID = "{{ puter_app_id }}";
-        if (PUTER_APP_ID) {
-            puter.setAppId(PUTER_APP_ID);
+        // Inject API Key from Backend
+        const PUTER_API_KEY = "{{ puter_api_key }}";
+        
+        if (PUTER_API_KEY && PUTER_API_KEY !== "None") {
+            // Try all possible ways to set the key in Puter v2
+            try {
+                if (typeof puter.setApiKey === 'function') puter.setApiKey(PUTER_API_KEY);
+                if (puter.ai && typeof puter.ai.setApiKey === 'function') puter.ai.setApiKey(PUTER_API_KEY);
+                console.log("Puter AI Key Applied Successfully");
+            } catch (e) {
+                console.warn("Puter Key Error:", e);
+            }
+        } else {
+            console.error("DEBUG: PUTER_API_KEY is missing! Check your Vercel Environment Variables.");
         }
     </script>
     <script src="/static/js/scannerLogic.js"></script>

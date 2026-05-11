@@ -27,8 +27,8 @@ def index():
 @app.route('/scan')
 def scan():
     """QR/Manual scan interface."""
-    puter_app_id = os.getenv("PUTER_APP_ID", "")
-    return render_template('scanFood.html', puter_app_id=puter_app_id)
+    puter_api_key = os.getenv("PUTER_API_KEY", "")
+    return render_template('scanFood.html', puter_api_key=puter_api_key)
 
 @app.route('/login')
 def login():

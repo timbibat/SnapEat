@@ -153,10 +153,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 15000);
                 
                 // Call Puter.js AI
+                // We pass the API Key directly in the options to ensure no redirect
                 puter.ai.chat(
                     "Identify the food in this image. Return ONLY the one-word name (e.g. 'Apple'). No sentences.",
                     dataUrl,
-                    { model: "gpt-5.4-nano", stream: false }
+                    { 
+                        model: "gpt-5.4-nano", 
+                        stream: false,
+                        apiKey: typeof PUTER_API_KEY !== 'undefined' ? PUTER_API_KEY : null
+                    }
                 )
                 .then(response => {
                     clearTimeout(timeout);
