@@ -109,7 +109,7 @@
     <script>
         // Use the Auth Token to sign in silently
         const PUTER_AUTH_TOKEN = "{{ puter_auth_token }}";
-        
+
         if (PUTER_AUTH_TOKEN && PUTER_AUTH_TOKEN !== "None") {
             // Sign in with token - this is the "Golden Fix" for redirects
             puter.auth.signInWithToken(PUTER_AUTH_TOKEN).then(() => {

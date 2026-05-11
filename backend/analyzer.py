@@ -33,15 +33,15 @@ def identify_food_item(image_data=None, food_name=None):
         if search_results:
             return {"status": "identified", "food": search_results[0], "method": "puter_ai"}
             
-        # If the food Puter found isn't in our DB, return a dynamic result
+        # If the food Puter found isn't in our DB, we'll return a generic "Food" result
+        # to ensure the app doesn't crash during the demo.
         return {
             "status": "identified", 
             "food": {
-                "name": food_name.title(), # Use the actual name found!
+                "name": food_name.capitalize(),
                 "category": "General",
-                "nutrition": {"calories": 100, "carbs": 15, "sugars": 8, "fiber": 3, "protein": 2, "fat": 1},
-                "health_benefits": ["Good source of general nutrients", "Supports overall health"],
-                "image_url": "https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=500&q=80"
+                "nutrition": {"calories": 100, "carbs": 10, "sugars": 5, "fiber": 2, "protein": 5, "fat": 2},
+                "health_benefits": "General nutrition information for " + food_name
             },
             "method": "puter_ai"
         }

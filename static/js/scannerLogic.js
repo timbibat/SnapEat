@@ -156,9 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 puter.ai.chat(
                     "Identify the food in this image. Return ONLY the one-word name (e.g. 'Apple').",
                     dataUrl,
-                    { 
-                        model: "gpt-4o-mini", 
-                        stream: false 
+                    {
+                        model: "gpt-4o-mini",
+                        stream: false
                     }
                 )
                     .then(response => {
