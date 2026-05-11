@@ -3,14 +3,10 @@ Food identification and nutrition retrieval module.
 Uses manual input and OpenRouter AI to identify food items.
 """
 
-import io
 import base64
 import json
 import requests
 import os
-import numpy as np
-from PIL import Image
-from sklearn.cluster import KMeans
 from dotenv import load_dotenv
 from backend.food_dataset import get_food_by_name, search_foods, get_all_food_names
 
