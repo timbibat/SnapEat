@@ -3,6 +3,9 @@
  * Uses Puter.js (gpt-5.4-nano) for frontend AI identification.
  */
 
+// Puter App ID is now injected from scanFood.html (Backend -> Template -> JS)
+// puter.setAppId is called in the script tag within scanFood.html
+
 document.addEventListener('DOMContentLoaded', () => {
 
     const video = document.getElementById('cameraPreview');
@@ -141,25 +144,32 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onloadend = async () => {
                 const dataUrl = reader.result;
                 
-                console.log("Analyzing with Puter AI (gpt-5.4-nano)...");
+                console.log("Initializing Puter Engine...");
                 
-                // Call Puter.js AI
-                puter.ai.chat(
-                    "Identify the primary food item in this image. Return ONLY the name of the food (e.g., 'Apple', 'Pizza').",
-                    dataUrl,
-                    { model: "gpt-5.4-nano" }
-                )
-                .then(response => {
-                    const identifiedName = response.toString().trim().toLowerCase().replace(".", "");
-                    console.log("Puter identified:", identifiedName);
+                // Ensure Puter is ready (this helps prevent some redirect issues)
+                puter.ready().then(() => {
+                    console.log("Analyzing with gpt-5.4-nano...");
                     
-                    // Send identified name to backend for nutrition data
-                    sendToBackend(imageBlob, identifiedName);
-                })
-                .catch(err => {
-                    console.error("Puter Error:", err);
-                    alert("AI Analysis failed. Please try again.");
-                    showLoading(false);
+                    // Call Puter.js AI with optimized prompt
+                    puter.ai.chat(
+                        "Identify the food in this image. Return ONLY the one-word name (e.g. 'Apple'). No sentences.",
+                        dataUrl,
+                        { 
+                            model: "gpt-5.4-nano",
+                            stream: false // Set to false for faster single-word responses
+                        }
+                    )
+                    .then(response => {
+                        const identifiedName = response.toString().trim().toLowerCase().replace(/[^a-z ]/g, "");
+                        console.log("Puter identified:", identifiedName);
+                        sendToBackend(imageBlob, identifiedName);
+                    })
+                    .catch(err => {
+                        console.error("Puter AI Error:", err);
+                        // If Puter fails or asks for login, we show a helpful message
+                        alert("Puter AI: Please ensure you are signed in or your domain is whitelisted in the Puter Dashboard.");
+                        showLoading(false);
+                    });
                 });
             };
 

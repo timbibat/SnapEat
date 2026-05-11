@@ -104,6 +104,13 @@
 
     <!-- JS References -->
     <script src="https://js.puter.com/v2/"></script>
+    <script>
+        // Inject App ID from Backend
+        const PUTER_APP_ID = "{{ puter_app_id }}";
+        if (PUTER_APP_ID) {
+            puter.setAppId(PUTER_APP_ID);
+        }
+    </script>
     <script src="/static/js/scannerLogic.js"></script>
 </body>
 
