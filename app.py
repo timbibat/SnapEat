@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 import os
 
 from backend.analyzer import identify_food_item, get_nutrition_data, search_food_items, get_available_foods
@@ -10,13 +10,15 @@ from backend.food_dataset import get_food_by_name
 # Initialize Flask app
 # Vercel looks for 'app' as the entry point
 app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', 'snapeat_secret_key_123')
 
 # ── Page Routes ──────────────────────────────────────────────────────────────
 
 @app.route('/')
 def index():
     """Main dashboard page."""
-    return render_template('index.html')
+    username = session.get('user_name', '')
+    return render_template('index.html', username=username)
 
 @app.route('/scan')
 def scan():
@@ -26,6 +28,12 @@ def scan():
 @app.route('/login')
 def login():
     """Login page."""
+    return render_template('loginPage.html')
+
+@app.route('/logout')
+def logout():
+    """Handle user logout."""
+    session.clear()
     return render_template('loginPage.html')
 
 @app.route('/signup')
@@ -94,6 +102,8 @@ def api_login():
 
     user = authenticate_user(email, password)
     if user:
+        session['user_name'] = user['name']
+        session['user_email'] = user['email']
         return jsonify({"status": "success", "user": {"name": user['name'], "email": user['email']}})
     else:
         return jsonify({"status": "error", "message": "Invalid email or password"}), 401
