@@ -116,20 +116,27 @@ def identify_food():
     Accepts JSON body with 'food_name' or multipart form with 'food_image'.
     """
     food_name = None
+    image_data = None
 
     if request.is_json:
         food_name = request.json.get('food_name')
-    elif request.form:
+    else:
         food_name = request.form.get('food_name')
+        if 'food_image' in request.files:
+            file = request.files['food_image']
+            if file and file.filename != '':
+                image_data = file.read()
 
-    if not food_name:
+    # If we have neither name nor image, we can't do anything
+    if not food_name and not image_data:
         return jsonify({
             "status": "error",
-            "message": "Please provide a food_name.",
+            "message": "Please provide a food name or upload an image.",
             "available_foods": get_available_foods()
         }), 400
 
-    result = identify_food_item(food_name=food_name)
+    # Call identification with both name and image data
+    result = identify_food_item(image_data=image_data, food_name=food_name)
 
     if result and result["status"] == "identified":
         food = result["food"]

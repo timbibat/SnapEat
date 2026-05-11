@@ -1,14 +1,5 @@
 /**
  * Handles camera access, image capture, and image data preparation for food analysis.
- *
- * NOTE: BOOTSTRAP FRAMEWORK AHHH
- *
- * EXPECTED HTML DOM ELEMENTS (To be implemented by the HTML Developer):
- * - Video Element: ID 'cameraPreview' (where the camera stream will be shown)
- * - Capture Button: ID 'captureBtn' (triggers the photo capture)
- * - Switch Camera Button: ID 'switchCameraBtn' (optional, toggles front/back camera)
- * - File Upload Input: ID 'imageUploadInput' (fallback for uploading existing photos)
- * - Hidden Canvas: ID 'captureCanvas' (used internally to process the video frame, can be hidden)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -18,10 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const switchCameraBtn = document.getElementById('switchCameraBtn');
     const imageUploadInput = document.getElementById('imageUploadInput');
 
-    // Create canvas dynamically if not provided by HTML
+    // Create canvas if not provided by HTML
     let canvas = document.getElementById('captureCanvas');
     if (!canvas) {
         canvas = document.createElement('canvas');
+        canvas.id = 'captureCanvas';
         canvas.style.display = 'none';
         document.body.appendChild(canvas);
     }
@@ -31,69 +23,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Camera Initialization ---
     async function startCamera() {
-        if (!video) return; // Not on the scanner page
+        if (!video) return;
 
-        // Stop existing stream if any
+        // Stop existing stream
         if (currentStream) {
             currentStream.getTracks().forEach(track => track.stop());
         }
 
         const constraints = {
             video: {
-                facingMode: usingFrontCamera ? 'user' : 'environment',
-                width: { ideal: 1920 },
-                height: { ideal: 1080 }
+                facingMode: usingFrontCamera ? 'user' : 'environment'
             }
         };
 
         try {
             currentStream = await navigator.mediaDevices.getUserMedia(constraints);
             video.srcObject = currentStream;
-            video.play();
+            video.onloadedmetadata = () => {
+                video.play().catch(e => console.error("Video play failed:", e));
+            };
         } catch (error) {
-            console.error("Camera error:", error);
-            if (window.AppMain) {
-                AppMain.showToast("Could not access camera. Please allow permissions.", "error");
-            } else {
-                alert("Could not access camera.");
-            }
+            console.error("Camera access error:", error);
+            alert(`Could not access camera.\nError: ${error.name}\n\nTip: Ensure you have granted permission and are not using the camera in another app.`);
         }
     }
 
     // --- Image Capture ---
     function captureImage() {
-        if (!video || !currentStream) return;
-
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        if (!video || !currentStream) {
+            alert("Camera is not ready.");
+            return;
+        }
 
         const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Convert to Blob and send to backend
         canvas.toBlob((blob) => {
             if (blob) {
                 uploadFoodImage(blob);
             }
-        }, 'image/jpeg', 0.8); // 80% quality JPEG
+        }, 'image/jpeg', 0.85);
     }
 
     // --- Upload Logic ---
     async function uploadFoodImage(imageBlob, name = null) {
-        if (window.AppMain) AppMain.showLoader();
-
         const formData = new FormData();
         formData.append('food_image', imageBlob, 'capture.jpg');
         
-        // For the prototype: If a name is provided (e.g. from filename), send it
         if (name) {
             formData.append('food_name', name);
-        } else {
-            // Default mock name for camera captures in prototype
-            formData.append('food_name', 'apple'); 
         }
+        // NOTE: We don't send a default 'apple' anymore, so the AI can identify it!
 
         try {
+            // Show some feedback
+            if (captureBtn) captureBtn.disabled = true;
+            captureBtn.style.opacity = "0.5";
+
             const response = await fetch('/api/food/identify', {
                 method: 'POST',
                 body: formData
@@ -105,32 +94,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.message || "Failed to identify food.");
             }
 
-            if (window.AppMain) AppMain.showToast("Food identified successfully!", "success");
-
-            // Stop camera to save battery
+            // Stop camera
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
             }
 
-            // Redirect to results page with food_id
             if (data.food_id) {
                 window.location.href = `/analysis/${data.food_id}`;
             }
 
         } catch (error) {
             console.error("Upload error:", error);
-            if (window.AppMain) {
-                AppMain.showToast(error.message, "error");
-                AppMain.hideLoader();
-            } else {
-                alert(error.message);
+            alert("Error: " + error.message);
+            if (captureBtn) {
+                captureBtn.disabled = false;
+                captureBtn.style.opacity = "1";
             }
         }
     }
 
     // --- Event Listeners ---
     if (video) {
-        startCamera(); // Auto-start camera if video element is present
+        startCamera();
     }
 
     if (captureBtn) {
@@ -144,14 +129,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Handle manual file upload (from gallery/disk)
     if (imageUploadInput) {
         imageUploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
-                // Get filename without extension to use as food_name for prototype
-                const mockName = file.name.split('.')[0];
-                uploadFoodImage(file, mockName);
+                // If it's a generic capture name, don't send it so AI can identify
+                const lowerName = file.name.toLowerCase();
+                if (lowerName.includes('image') || lowerName.includes('capture') || lowerName.includes('img')) {
+                    uploadFoodImage(file);
+                } else {
+                    const cleanName = file.name.split('.')[0];
+                    uploadFoodImage(file, cleanName);
+                }
             }
         });
     }

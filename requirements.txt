@@ -4,4 +4,5 @@ pandas
 numpy
 Pillow
 python-dotenv
+requests
 # Add other ML or DB dependencies here (e.g., firebase-admin, gunicorn)

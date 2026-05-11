@@ -459,20 +459,30 @@ def load_kaggle_food(food_name):
         'FOOD-DATA-GROUP5.csv'
     ]
 
+    # Phase 1: Search ALL files for an Exact Match (Priority)
     for filename in csv_files:
         path = os.path.join(DATA_DIR, filename)
-        if not os.path.exists(path):
-            continue
-            
+        if not os.path.exists(path): continue
         try:
             with open(path, mode='r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
                 for row in reader:
-                    # Search in 'food' column
-                    if food_name in row['food'].lower():
+                    if row['food'].lower().strip() == food_name:
                         return format_kaggle_row(row)
-        except Exception as e:
-            print(f"Error reading {filename}: {e}")
+        except Exception: continue
+
+    # Phase 2: Search ALL files for a Whole Word Match (Fallback)
+    for filename in csv_files:
+        path = os.path.join(DATA_DIR, filename)
+        if not os.path.exists(path): continue
+        try:
+            with open(path, mode='r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    row_food = row['food'].lower()
+                    if f" {food_name} " in f" {row_food} ":
+                        return format_kaggle_row(row)
+        except Exception: continue
                     
     return None
 
@@ -521,19 +531,30 @@ def get_food_by_name(food_name):
     """Look up a food item by name (Dictionary first, then Kaggle CSV)."""
     if not food_name: return None
     
-    query = food_name.lower().strip().replace(" ", "_")
+    query = food_name.lower().strip().replace("_", " ") # Normalize to spaces for better matching
+    query_id = query.replace(" ", "_")
 
     # 1. Check Manual Dictionary (Exact match)
-    if query in FOOD_DATABASE:
-        return FOOD_DATABASE[query]
+    if query_id in FOOD_DATABASE:
+        return FOOD_DATABASE[query_id]
 
-    # 2. Check Manual Dictionary (Partial match)
+    # 2. Check Manual Dictionary (Whole word and plural/singular matching)
     for key, data in FOOD_DATABASE.items():
-        if query in key or query in data["name"].lower():
+        key_name = data["name"].lower()
+        # Direct word match or singular/plural check (e.g., strawberry vs strawberries)
+        is_plural_match = (query + "s" == key) or (query + "es" == key) or (key + "s" == query) or (key + "es" == query)
+        # Handle 'y' to 'ies' cases
+        if not is_plural_match and query.endswith('y'):
+            is_plural_match = (query[:-1] + "ies" == key)
+        if not is_plural_match and key.endswith('ies'):
+            is_plural_match = (key[:-3] + "y" == query)
+        
+        if f" {query} " in f" {key_name} " or f" {key_name} " in f" {query} " or is_plural_match:
             return data
 
     # 3. Fallback to Kaggle CSVs
-    kaggle_result = load_kaggle_food(food_name)
+    # We search with the space-normalized name
+    kaggle_result = load_kaggle_food(query)
     if kaggle_result:
         return kaggle_result
 
