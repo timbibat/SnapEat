@@ -285,6 +285,9 @@ body {
 }
 
 /* Theme overrides for Unhealthy */
-.theme-unhealthy .status-circle { border-color: #ff7675; }
-.theme-unhealthy .status-text { color: #d63031; }
-.theme-unhealthy .rating-dot { background-color: #ff7675; }
+.theme-unhealthy {
+    --app-green: #ff7675;
+    --app-dark-green: #d63031;
+    --app-light-green: #ffdddd;
+}
+.theme-unhealthy .rating-dot { background-color: var(--app-green); }
