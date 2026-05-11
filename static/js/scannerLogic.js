@@ -138,31 +138,55 @@ document.addEventListener('DOMContentLoaded', () => {
             // Show the "Analyzing..." spinner
             showLoading(true);
 
-            // Convert Blob to Data URL (Keeping this just in case it's needed later, but not strictly required for the prompt)
+            // Convert Blob to Data URL for Puter.js
             const reader = new FileReader();
             reader.readAsDataURL(imageBlob);
             reader.onloadend = async () => {
-                console.log("Bypassing Puter AI to avoid login popup...");
+                const dataUrl = reader.result;
+
+                console.log("Analyzing with gpt-5.4-nano...");
 
                 // Safety timeout: If AI doesn't respond in 15s, stop loading
                 const timeout = setTimeout(() => {
+                    alert("AI Analysis is taking longer than expected. Please try again or check your internet.");
                     showLoading(false);
                 }, 15000);
 
-                // Simulate AI delay and ask user for food name to test the pipeline
-                setTimeout(() => {
-                    clearTimeout(timeout);
-                    const userInput = prompt("Puter AI is disabled to prevent the login popup.\nFor testing, please enter the food name (e.g., Apple, Banana):", "Apple");
-                    
-                    if (userInput) {
-                        const identifiedName = userInput.toString().trim().toLowerCase().replace(/[^a-z ]/g, "");
-                        console.log("Manually identified:", identifiedName);
-                        sendToBackend(imageBlob, identifiedName);
-                    } else {
-                        // User cancelled
-                        showLoading(false);
+                // Check if user is signed in to Puter to avoid blank popups in webviews
+                if (!puter.auth.isSignedIn()) {
+                    console.warn("Puter: User not signed in. Attempting to sign in...");
+                    showLoading(false);
+                    alert("Please sign in to Puter to continue analysis.");
+                    puter.auth.signIn().then(() => {
+                        alert("Signed in! Please click capture again.");
+                    }).catch(err => {
+                        console.error("Puter Sign-in Error:", err);
+                        alert("Failed to sign in to Puter. Please try again.");
+                    });
+                    return;
+                }
+
+                // Call Puter.js AI
+                puter.ai.chat(
+                    "Identify the food in this image. Return ONLY the one-word name (e.g. 'Apple').",
+                    dataUrl,
+                    {
+                        model: "gpt-5.4-nano",
+                        stream: false
                     }
-                }, 500);
+                )
+                    .then(response => {
+                        clearTimeout(timeout);
+                        const identifiedName = response.toString().trim().toLowerCase().replace(/[^a-z ]/g, "");
+                        console.log("Puter identified:", identifiedName);
+                        sendToBackend(imageBlob, identifiedName);
+                    })
+                    .catch(err => {
+                        clearTimeout(timeout);
+                        console.error("Puter AI Error:", err);
+                        alert("AI Error: " + (err.message || "Failed to identify food."));
+                        showLoading(false);
+                    });
             };
 
         } catch (error) {

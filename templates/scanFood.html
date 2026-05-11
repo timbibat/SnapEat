@@ -110,16 +110,21 @@
         // Use the Auth Token to sign in silently
         const PUTER_AUTH_TOKEN = "{{ puter_auth_token }}";
 
-        if (PUTER_AUTH_TOKEN && PUTER_AUTH_TOKEN !== "None") {
-            // Sign in with token - this is the "Golden Fix" for redirects
-            puter.auth.signInWithToken(PUTER_AUTH_TOKEN).then(() => {
-                console.log("Puter: Silently signed in with token.");
-            }).catch(err => {
-                console.error("Puter Auth Error:", err);
-            });
-        } else {
-            console.warn("Puter Auth: No token found. Login may be required.");
+        function checkPuterAuth() {
+            if (PUTER_AUTH_TOKEN && PUTER_AUTH_TOKEN !== "None") {
+                // Sign in with token - this is the "Golden Fix" for redirects
+                puter.auth.signInWithToken(PUTER_AUTH_TOKEN).then(() => {
+                    console.log("Puter: Silently signed in with token.");
+                }).catch(err => {
+                    console.error("Puter Auth Error:", err);
+                });
+            } else {
+                console.warn("Puter Auth: No token found. Login may be required.");
+            }
         }
+
+        // Initialize Puter auth check
+        puter.ready().then(checkPuterAuth);
     </script>
     <script src="/static/js/scannerLogic.js"></script>
 </body>
