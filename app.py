@@ -27,8 +27,9 @@ def index():
 @app.route('/scan')
 def scan():
     """QR/Manual scan interface."""
-    puter_api_key = os.getenv("PUTER_API_KEY", "")
-    return render_template('scanFood.html', puter_api_key=puter_api_key)
+    # Use Auth Token to bypass login redirect
+    puter_auth_token = os.getenv("PUTER_AUTH_TOKEN", "")
+    return render_template('scanFood.html', puter_auth_token=puter_auth_token)
 
 @app.route('/login')
 def login():

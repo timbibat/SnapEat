@@ -56,14 +56,14 @@ document.addEventListener('DOMContentLoaded', () => {
             video.play().catch(e => console.error("Video play failed:", e));
         } catch (error) {
             console.warn("Primary camera failed, trying aggressive fallback...", error);
-            
+
             // 3. FALLBACK: Try a completely empty constraint (Most compatible)
             try {
                 // Support legacy prefixes if needed
                 const getUserMedia = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ||
-                                     navigator.webkitGetUserMedia ||
-                                     navigator.mozGetUserMedia;
-                
+                    navigator.webkitGetUserMedia ||
+                    navigator.mozGetUserMedia;
+
                 if (typeof getUserMedia === 'function') {
                     // If using legacy, we need to bind context
                     if (navigator.mediaDevices) {
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (fallbackError) {
                 console.error("Final camera error:", fallbackError);
-                
+
                 let msg = `Could not access camera (${fallbackError.name}).\n\n`;
                 if (fallbackError.name === 'NotAllowedError' || fallbackError.name === 'PermissionDeniedError') {
                     msg += "PERMISSION DENIED: Please go to your Phone Settings > Apps > SnapEat and enable Camera permissions.";
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const context = canvas.getContext('2d');
         canvas.width = video.videoWidth || 640;
         canvas.height = video.videoHeight || 480;
-        
+
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
         canvas.toBlob((blob) => {
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.readAsDataURL(imageBlob);
             reader.onloadend = async () => {
                 const dataUrl = reader.result;
-                
+
                 console.log("Analyzing with gpt-5.4-nano...");
 
                 // Safety timeout: If AI doesn't respond in 15s, stop loading
@@ -151,30 +151,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert("AI Analysis is taking longer than expected. Please try again or check your internet.");
                     showLoading(false);
                 }, 15000);
-                
+
                 // Call Puter.js AI
-                // We pass the API Key directly in the options to ensure no redirect
                 puter.ai.chat(
-                    "Identify the food in this image. Return ONLY the one-word name (e.g. 'Apple'). No sentences.",
+                    "Identify the food in this image. Return ONLY the one-word name (e.g. 'Apple').",
                     dataUrl,
                     { 
-                        model: "gpt-5.4-nano", 
-                        stream: false,
-                        apiKey: typeof PUTER_API_KEY !== 'undefined' ? PUTER_API_KEY : null
+                        model: "gpt-4o-mini", 
+                        stream: false 
                     }
                 )
-                .then(response => {
-                    clearTimeout(timeout);
-                    const identifiedName = response.toString().trim().toLowerCase().replace(/[^a-z ]/g, "");
-                    console.log("Puter identified:", identifiedName);
-                    sendToBackend(imageBlob, identifiedName);
-                })
-                .catch(err => {
-                    clearTimeout(timeout);
-                    console.error("Puter AI Error:", err);
-                    alert("AI Error: " + (err.message || "Failed to identify food."));
-                    showLoading(false);
-                });
+                    .then(response => {
+                        clearTimeout(timeout);
+                        const identifiedName = response.toString().trim().toLowerCase().replace(/[^a-z ]/g, "");
+                        console.log("Puter identified:", identifiedName);
+                        sendToBackend(imageBlob, identifiedName);
+                    })
+                    .catch(err => {
+                        clearTimeout(timeout);
+                        console.error("Puter AI Error:", err);
+                        alert("AI Error: " + (err.message || "Failed to identify food."));
+                        showLoading(false);
+                    });
             };
 
         } catch (error) {

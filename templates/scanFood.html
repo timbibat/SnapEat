@@ -104,21 +104,21 @@
 
     <!-- JS References -->
     <script src="https://js.puter.com/v2/"></script>
+    <!-- JS References -->
+    <script src="https://js.puter.com/v2/"></script>
     <script>
-        // Inject API Key from Backend
-        const PUTER_API_KEY = "{{ puter_api_key }}";
+        // Use the Auth Token to sign in silently
+        const PUTER_AUTH_TOKEN = "{{ puter_auth_token }}";
         
-        if (PUTER_API_KEY && PUTER_API_KEY !== "None") {
-            // Try all possible ways to set the key in Puter v2
-            try {
-                if (typeof puter.setApiKey === 'function') puter.setApiKey(PUTER_API_KEY);
-                if (puter.ai && typeof puter.ai.setApiKey === 'function') puter.ai.setApiKey(PUTER_API_KEY);
-                console.log("Puter AI Key Applied Successfully");
-            } catch (e) {
-                console.warn("Puter Key Error:", e);
-            }
+        if (PUTER_AUTH_TOKEN && PUTER_AUTH_TOKEN !== "None") {
+            // Sign in with token - this is the "Golden Fix" for redirects
+            puter.auth.signInWithToken(PUTER_AUTH_TOKEN).then(() => {
+                console.log("Puter: Silently signed in with token.");
+            }).catch(err => {
+                console.error("Puter Auth Error:", err);
+            });
         } else {
-            console.error("DEBUG: PUTER_API_KEY is missing! Check your Vercel Environment Variables.");
+            console.warn("Puter Auth: No token found. Login may be required.");
         }
     </script>
     <script src="/static/js/scannerLogic.js"></script>
