@@ -27,14 +27,24 @@ document.addEventListener('DOMContentLoaded', () => {
     async function startCamera() {
         if (!video) return;
 
+        // Security check: getUserMedia requires HTTPS or localhost
+        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            console.error("Camera access blocked: Insecure context (requires HTTPS)");
+            alert("Security Error: Camera access requires an HTTPS connection. Please ensure your site is served over SSL.");
+            return;
+        }
+
         // Stop existing stream
         if (currentStream) {
             currentStream.getTracks().forEach(track => track.stop());
         }
 
+        // Try high-resolution environment camera first
         const constraints = {
             video: {
-                facingMode: usingFrontCamera ? 'user' : 'environment'
+                facingMode: usingFrontCamera ? 'user' : { ideal: 'environment' },
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
             }
         };
 
@@ -45,8 +55,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 video.play().catch(e => console.error("Video play failed:", e));
             };
         } catch (error) {
-            console.error("Camera access error:", error);
-            alert(`Could not access camera.\nError: ${error.name}\n\nTip: Ensure you have granted permission.`);
+            console.warn("Primary camera constraints failed, trying fallback...", error);
+            
+            // FALLBACK: Try a very simple constraint if the first one fails
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = currentStream;
+                video.play();
+            } catch (fallbackError) {
+                console.error("Camera access error:", fallbackError);
+                alert(`Could not access camera.\n\nTips for Median.co/Mobile:\n1. Ensure your site uses HTTPS.\n2. Allow Camera permissions in your phone settings for the app.\n3. Make sure no other app is using the camera.`);
+            }
         }
     }
 
