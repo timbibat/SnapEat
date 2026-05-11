@@ -174,9 +174,15 @@ def identify_food():
             "log_id": log_id
         })
 
+    error_message = (
+        f"Food '{food_name}' not found in database."
+        if food_name
+        else "AI could not identify the food from the uploaded image."
+    )
+
     return jsonify({
         "status": "error",
-        "message": f"Food '{food_name}' not found in database.",
+        "message": error_message,
         "available_foods": get_available_foods()
     }), 404
 
