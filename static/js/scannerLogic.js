@@ -144,32 +144,31 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onloadend = async () => {
                 const dataUrl = reader.result;
                 
-                console.log("Initializing Puter Engine...");
+                console.log("Analyzing with gpt-5.4-nano...");
+
+                // Safety timeout: If AI doesn't respond in 15s, stop loading
+                const timeout = setTimeout(() => {
+                    alert("AI Analysis is taking longer than expected. Please try again or check your internet.");
+                    showLoading(false);
+                }, 15000);
                 
-                // Ensure Puter is ready (this helps prevent some redirect issues)
-                puter.ready().then(() => {
-                    console.log("Analyzing with gpt-5.4-nano...");
-                    
-                    // Call Puter.js AI with optimized prompt
-                    puter.ai.chat(
-                        "Identify the food in this image. Return ONLY the one-word name (e.g. 'Apple'). No sentences.",
-                        dataUrl,
-                        { 
-                            model: "gpt-5.4-nano",
-                            stream: false // Set to false for faster single-word responses
-                        }
-                    )
-                    .then(response => {
-                        const identifiedName = response.toString().trim().toLowerCase().replace(/[^a-z ]/g, "");
-                        console.log("Puter identified:", identifiedName);
-                        sendToBackend(imageBlob, identifiedName);
-                    })
-                    .catch(err => {
-                        console.error("Puter AI Error:", err);
-                        // If Puter fails or asks for login, we show a helpful message
-                        alert("Puter AI: Please ensure you are signed in or your domain is whitelisted in the Puter Dashboard.");
-                        showLoading(false);
-                    });
+                // Call Puter.js AI
+                puter.ai.chat(
+                    "Identify the food in this image. Return ONLY the one-word name (e.g. 'Apple'). No sentences.",
+                    dataUrl,
+                    { model: "gpt-5.4-nano", stream: false }
+                )
+                .then(response => {
+                    clearTimeout(timeout);
+                    const identifiedName = response.toString().trim().toLowerCase().replace(/[^a-z ]/g, "");
+                    console.log("Puter identified:", identifiedName);
+                    sendToBackend(imageBlob, identifiedName);
+                })
+                .catch(err => {
+                    clearTimeout(timeout);
+                    console.error("Puter AI Error:", err);
+                    alert("AI Error: " + (err.message || "Failed to identify food."));
+                    showLoading(false);
                 });
             };
 
