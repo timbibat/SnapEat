@@ -1,5 +1,6 @@
 /**
  * Handles Puter auth bootstrapping for scanner pages.
+ * Optimized for Median.co (GoNative) and mobile webviews.
  */
 (function (window, document) {
     const PuterAuth = {
@@ -8,7 +9,11 @@
         },
 
         isMedianEnvironment() {
-            return navigator.userAgent.includes('GoNative') || Boolean(window.gonative);
+            // Check for UA markers or injected JS bridge objects
+            return navigator.userAgent.includes('GoNative') || 
+                   navigator.userAgent.includes('Median') ||
+                   Boolean(window.gonative) || 
+                   Boolean(window.median);
         },
 
         setupMedianBridge() {
@@ -22,9 +27,11 @@
                 if (!url) return originalOpen(url, name, specs);
 
                 const urlStr = url.toString();
-                // If it's a Puter or Google auth domain, force it to be internal
+                
+                // For Google Auth specifically, if User Agent is overridden in Dashboard,
+                // we can try to open it internally. Otherwise, it might still need Chrome.
                 if (urlStr.includes('puter.com') || urlStr.includes('google.com') || urlStr.includes('accounts.google')) {
-                    console.log("Median Bridge: Forcing internal opening for:", urlStr);
+                    console.log("Median Bridge: Routing auth URL through app container:", urlStr);
                     window.location.href = "gonative://urls/open?url=" + encodeURIComponent(urlStr) + "&internal=true";
                     return null;
                 }
@@ -45,8 +52,15 @@
                 return Promise.reject(new Error('Puter SDK is not available.'));
             }
 
-            sessionStorage.setItem('puterReturnTo', PuterAuth.getScanUrl());
+            // In Median/Mobile, popups are often blocked or fail to redirect back.
+            // Using 'redirect: true' forces Puter to use the current window for login.
+            if (this.isMedianEnvironment() || /Android|iPhone|iPad/i.test(navigator.userAgent)) {
+                console.info("Using Puter Redirect flow for mobile/webview compatibility...");
+                return window.puter.auth.signIn({ ...options, redirect: true });
+            }
 
+            // Default popup flow for Desktop
+            sessionStorage.setItem('puterReturnTo', PuterAuth.getScanUrl());
             return window.puter.auth.signIn(options)
                 .then((result) => {
                     sessionStorage.removeItem('puterReturnTo');
@@ -61,6 +75,17 @@
                 return Promise.resolve();
             }
 
+            // 1. Check if we just returned from a redirect login
+            if (window.puter.auth.isSignedIn()) {
+                console.log('Puter: User is signed in.');
+                if (sessionStorage.getItem('puterReturnTo')) {
+                    sessionStorage.removeItem('puterReturnTo');
+                    PuterAuth.redirectToScan();
+                }
+                return Promise.resolve();
+            }
+
+            // 2. Try to sign in with provided token from backend
             if (authToken && authToken !== 'None') {
                 return window.puter.auth.signInWithToken(authToken)
                     .then(() => {
@@ -71,14 +96,11 @@
                     });
             }
 
-            console.warn('Puter Auth: No token found. Login may be required.');
+            console.warn('Puter Auth: No session found. Login may be required.');
+            
             if (PuterAuth.isMedianEnvironment()) {
-                console.info("Median.co detected. IMPORTANT: Ensure 'puter.com', 'google.com', and 'accounts.google.com' are in your Internal Domains list.");
-            }
-
-            if (sessionStorage.getItem('puterReturnTo') && window.puter.auth.isSignedIn()) {
-                sessionStorage.removeItem('puterReturnTo');
-                PuterAuth.redirectToScan();
+                console.info("Median.co environment active.");
+                // Reminder: disallowed_useragent fix requires Dashboard UA change.
             }
 
             return Promise.resolve();
