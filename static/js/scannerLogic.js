@@ -3,19 +3,16 @@
  * Uses Puter.js (gpt-5.4-nano) for frontend AI identification.
  */
 
-// Puter App ID is now injected from scanFood.html (Backend -> Template -> JS)
-// puter.setAppId is called in the script tag within scanFood.html
+window.DomUtils.ready(() => {
 
-document.addEventListener('DOMContentLoaded', () => {
-
-    const video = document.getElementById('cameraPreview');
-    const captureBtn = document.getElementById('captureBtn');
-    const switchCameraBtn = document.getElementById('switchCameraBtn');
-    const imageUploadInput = document.getElementById('imageUploadInput');
-    const loadingOverlay = document.getElementById('loadingOverlay');
+    const video = DomUtils.byId('cameraPreview');
+    const captureBtn = DomUtils.byId('captureBtn');
+    const switchCameraBtn = DomUtils.byId('switchCameraBtn');
+    const imageUploadInput = DomUtils.byId('imageUploadInput');
+    const loadingOverlay = DomUtils.byId('loadingOverlay');
 
     // Create canvas if not provided by HTML
-    let canvas = document.getElementById('captureCanvas');
+    let canvas = DomUtils.byId('captureCanvas');
     if (!canvas) {
         canvas = document.createElement('canvas');
         canvas.id = 'captureCanvas';
@@ -97,9 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- UI Controls ---
     function showLoading(show) {
-        if (loadingOverlay) {
-            loadingOverlay.hidden = !show;
-        }
+        DomUtils.setHidden(loadingOverlay, !show);
         if (captureBtn) {
             captureBtn.disabled = show;
             captureBtn.style.opacity = show ? "0.5" : "1";

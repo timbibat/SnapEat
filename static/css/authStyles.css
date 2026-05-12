@@ -51,6 +51,11 @@ body {
     text-align: left; /* Left aligned */
 }
 
+.authHelpText {
+    color: var(--textGray);
+    font-size: 0.9rem;
+}
+
 /* Input Fields */
 .customInputWrapper {
     position: relative;

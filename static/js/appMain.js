@@ -1,11 +1,5 @@
 /**
- * Core application logic, routing, and shared UI interactions.
- *
- * NOTE: BOOTSTRAP FRAMEWORK AHHH
- * 
- * EXPECTED HTML DOM ELEMENTS (To be implemented by the HTML Developer):
- * - Loading Spinner: An element with ID 'global-loader'. Should be hidden by default (e.g. display: none).
- * - Toast Notification: An element with ID 'global-toast'. Should have a mechanism to show message text.
+ * Shared application helpers for API calls and optional global UI elements.
  */
 
 const AppMain = {
@@ -13,7 +7,7 @@ const AppMain = {
      * Shows a global loading overlay
      */
     showLoader: function () {
-        const loader = document.getElementById('global-loader');
+        const loader = window.DomUtils?.byId('global-loader') || document.getElementById('global-loader');
         if (loader) {
             loader.style.display = 'flex';
         }
@@ -23,7 +17,7 @@ const AppMain = {
      * Hides the global loading overlay
      */
     hideLoader: function () {
-        const loader = document.getElementById('global-loader');
+        const loader = window.DomUtils?.byId('global-loader') || document.getElementById('global-loader');
         if (loader) {
             loader.style.display = 'none';
         }
@@ -35,7 +29,7 @@ const AppMain = {
      * @param {string} type - 'error', 'success', or 'info'
      */
     showToast: function (message, type = 'info') {
-        const toast = document.getElementById('global-toast');
+        const toast = window.DomUtils?.byId('global-toast') || document.getElementById('global-toast');
         if (toast) {
             toast.textContent = message;
             toast.className = `toast show ${type}`;
@@ -45,7 +39,6 @@ const AppMain = {
                 toast.className = 'toast hidden';
             }, 3000);
         } else {
-            // Fallback if toast element isn't in DOM yet
             console.log(`[${type.toUpperCase()}] ${message}`);
             if (type === 'error') {
                 alert(message);
