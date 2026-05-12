@@ -101,8 +101,47 @@ window.DomUtils.ready(() => {
         }
     }
 
+    async function ensurePuterSignedIn() {
+        if (!window.puter?.auth) {
+            alert("Puter is still loading. Please try again in a moment.");
+            return false;
+        }
+
+        if (puter.auth.isSignedIn()) {
+            return true;
+        }
+
+        const isMedian = window.PuterAuth?.isMedianEnvironment?.() ||
+            navigator.userAgent.includes('GoNative') ||
+            Boolean(window.gonative);
+        let msg = "Please sign in to Puter to continue analysis.";
+        if (isMedian) {
+            msg += "\n\nTip for Median.co: add 'puter.com' to Internal Domains in the Median dashboard so the sign-in can complete inside the app.";
+        }
+
+        alert(msg);
+
+        try {
+            if (window.PuterAuth?.signInAndReturnToScan) {
+                await window.PuterAuth.signInAndReturnToScan();
+            } else {
+                await puter.auth.signIn();
+                window.location.replace('/scan');
+            }
+        } catch (err) {
+            console.error("Puter Sign-in Error:", err);
+            alert("Failed to sign in to Puter. If you're on a mobile app, try opening this in a regular browser first.");
+        }
+
+        return false;
+    }
+
     // --- Image Capture ---
-    function captureImage() {
+    async function captureImage() {
+        if (!(await ensurePuterSignedIn())) {
+            return;
+        }
+
         if (!video || !currentStream) {
             alert("Camera is not ready.");
             return;
@@ -146,27 +185,6 @@ window.DomUtils.ready(() => {
                     alert("AI Analysis is taking longer than expected. Please try again or check your internet.");
                     showLoading(false);
                 }, 15000);
-
-                // Check if user is signed in to Puter to avoid blank popups in webviews
-                if (!puter.auth.isSignedIn()) {
-                    console.warn("Puter: User not signed in. Attempting to sign in...");
-                    showLoading(false);
-                    
-                    const isMedian = navigator.userAgent.includes('GoNative') || window.gonative;
-                    let msg = "Please sign in to Puter to continue analysis.";
-                    if (isMedian) {
-                        msg += "\n\nTip for Median.co: If the login page is blank, please ensure 'puter.com' is added to your 'Internal Domains' in the Median dashboard.";
-                    }
-                    
-                    alert(msg);
-                    puter.auth.signIn().then(() => {
-                        alert("Signed in! Please click capture again.");
-                    }).catch(err => {
-                        console.error("Puter Sign-in Error:", err);
-                        alert("Failed to sign in to Puter. If you're on a mobile app, try opening this in a regular browser first.");
-                    });
-                    return;
-                }
 
                 // Call Puter.js AI
                 puter.ai.chat(
@@ -245,7 +263,12 @@ window.DomUtils.ready(() => {
     }
 
     if (imageUploadInput) {
-        imageUploadInput.addEventListener('change', (e) => {
+        imageUploadInput.addEventListener('change', async (e) => {
+            if (!(await ensurePuterSignedIn())) {
+                e.target.value = '';
+                return;
+            }
+
             const file = e.target.files[0];
             if (file) {
                 // ALWAYS use AI identification for uploads to get clean names
