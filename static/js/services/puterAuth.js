@@ -11,6 +11,27 @@
             return navigator.userAgent.includes('GoNative') || Boolean(window.gonative);
         },
 
+        setupMedianBridge() {
+            if (!this.isMedianEnvironment()) return;
+
+            console.info("Median.co environment detected. Setting up Link Interceptor...");
+
+            // Intercept window.open calls which Puter.js uses for the login popup
+            const originalOpen = window.open;
+            window.open = (url, name, specs) => {
+                if (!url) return originalOpen(url, name, specs);
+
+                const urlStr = url.toString();
+                // If it's a Puter or Google auth domain, force it to be internal
+                if (urlStr.includes('puter.com') || urlStr.includes('google.com') || urlStr.includes('accounts.google')) {
+                    console.log("Median Bridge: Forcing internal opening for:", urlStr);
+                    window.location.href = "gonative://urls/open?url=" + encodeURIComponent(urlStr) + "&internal=true";
+                    return null;
+                }
+                return originalOpen(url, name, specs);
+            };
+        },
+
         getScanUrl() {
             return new URL('/scan', window.location.origin).toString();
         },
@@ -52,7 +73,7 @@
 
             console.warn('Puter Auth: No token found. Login may be required.');
             if (PuterAuth.isMedianEnvironment()) {
-                console.info("Median.co detected. If the login popup is blank, ensure 'puter.com' is in your Internal Domains list.");
+                console.info("Median.co detected. IMPORTANT: Ensure 'puter.com', 'google.com', and 'accounts.google.com' are in your Internal Domains list.");
             }
 
             if (sessionStorage.getItem('puterReturnTo') && window.puter.auth.isSignedIn()) {
@@ -64,6 +85,8 @@
         },
 
         init() {
+            this.setupMedianBridge();
+
             if (!window.puter?.ready) {
                 console.warn('Puter Auth: Puter SDK did not expose ready().');
                 return;
