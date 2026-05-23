@@ -105,9 +105,11 @@
                         <i class="fa-solid fa-child text-white fs-2"></i>
                     </div>
                     <div class="age-name display-font">Kid</div>
+                    {% set kid_rating = classification.age_sensitivity.kid.rating if classification else 'Highly Recommended' %}
+                    {% set kid_warning = 'not recommended' in kid_rating|lower %}
                     <div class="age-rating-row">
-                        <div class="rating-dot"></div>
-                        <div class="rating-text text-uppercase">{{ classification.age_sensitivity.kid.rating if classification else 'Highly Recommended' }}</div>
+                        <div class="rating-dot {% if kid_warning %}bg-danger{% endif %}"></div>
+                        <div class="rating-text text-uppercase {% if kid_warning %}text-danger{% endif %}">{{ kid_rating }}</div>
                     </div>
                     <ul class="age-tips">
                         {% if classification and classification.age_sensitivity.kid.tips %}
@@ -130,9 +132,11 @@
                         <i class="fa-solid fa-child-reaching text-white fs-2"></i>
                     </div>
                     <div class="age-name display-font">Teen</div>
+                    {% set teen_rating = classification.age_sensitivity.teen.rating if classification else 'Highly Recommended' %}
+                    {% set teen_warning = 'not recommended' in teen_rating|lower %}
                     <div class="age-rating-row">
-                        <div class="rating-dot"></div>
-                        <div class="rating-text text-uppercase">{{ classification.age_sensitivity.teen.rating if classification else 'Highly Recommended' }}</div>
+                        <div class="rating-dot {% if teen_warning %}bg-danger{% endif %}"></div>
+                        <div class="rating-text text-uppercase {% if teen_warning %}text-danger{% endif %}">{{ teen_rating }}</div>
                     </div>
                     <ul class="age-tips">
                         {% if classification and classification.age_sensitivity.teen.tips %}
@@ -155,9 +159,11 @@
                         <i class="fa-solid fa-user-group text-white fs-3"></i>
                     </div>
                     <div class="age-name display-font">Adult</div>
+                    {% set adult_rating = classification.age_sensitivity.adult.rating if classification else 'Highly Recommended' %}
+                    {% set adult_warning = 'not recommended' in adult_rating|lower %}
                     <div class="age-rating-row">
-                        <div class="rating-dot"></div>
-                        <div class="rating-text text-uppercase">{{ classification.age_sensitivity.adult.rating if classification else 'Highly Recommended' }}</div>
+                        <div class="rating-dot {% if adult_warning %}bg-danger{% endif %}"></div>
+                        <div class="rating-text text-uppercase {% if adult_warning %}text-danger{% endif %}">{{ adult_rating }}</div>
                     </div>
                     <ul class="age-tips">
                         {% if classification and classification.age_sensitivity.adult.tips %}
@@ -180,9 +186,11 @@
                         <i class="fa-solid fa-person-cane text-white fs-2"></i>
                     </div>
                     <div class="age-name display-font">Elderly</div>
+                    {% set elderly_rating = classification.age_sensitivity.elderly.rating if classification else 'Highly Recommended' %}
+                    {% set elderly_warning = 'not recommended' in elderly_rating|lower %}
                     <div class="age-rating-row">
-                        <div class="rating-dot"></div>
-                        <div class="rating-text text-uppercase">{{ classification.age_sensitivity.elderly.rating if classification else 'Highly Recommended' }}</div>
+                        <div class="rating-dot {% if elderly_warning %}bg-danger{% endif %}"></div>
+                        <div class="rating-text text-uppercase {% if elderly_warning %}text-danger{% endif %}">{{ elderly_rating }}</div>
                     </div>
                     <ul class="age-tips">
                         {% if classification and classification.age_sensitivity.elderly.tips %}
