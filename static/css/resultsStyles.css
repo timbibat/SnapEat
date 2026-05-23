@@ -246,6 +246,14 @@ body {
     color: #333;
 }
 
+.rating-dot.bg-danger {
+    background-color: #ff7675 !important;
+}
+
+.rating-text.text-danger {
+    color: #d63031 !important;
+}
+
 .age-tips {
     list-style: none;
     padding: 0;
