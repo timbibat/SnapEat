@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import os
 from dotenv import load_dotenv
 
@@ -22,6 +22,8 @@ app.secret_key = os.environ.get('SECRET_KEY', 'snapeat_secret_key_123')
 def index():
     """Main dashboard page."""
     username = session.get('user_name', '')
+    if not username:
+        return redirect(url_for('login'))
     return render_template('index.html', username=username)
 
 @app.route('/scan')
@@ -29,47 +31,63 @@ def scan():
     """QR/Manual scan interface."""
     # Use Auth Token to bypass login redirect
     puter_auth_token = os.getenv("PUTER_AUTH_TOKEN", "")
+    if not session.get('user_name') and not puter_auth_token:
+        return redirect(url_for('login'))
     return render_template('scanFood.html', puter_auth_token=puter_auth_token)
 
 @app.route('/login')
 def login():
     """Login page."""
+    if session.get('user_name'):
+        return redirect(url_for('index'))
     return render_template('loginPage.html')
 
 @app.route('/logout')
 def logout():
     """Handle user logout."""
     session.clear()
-    return render_template('loginPage.html')
+    return redirect(url_for('login'))
 
 @app.route('/signup')
 def signup():
     """Signup page."""
+    if session.get('user_name'):
+        return redirect(url_for('index'))
     return render_template('signupPage.html')
 
 @app.route('/forgot-password')
 def forgot_password():
     """Forgot password page."""
+    if session.get('user_name'):
+        return redirect(url_for('index'))
     return render_template('forgotPassword.html')
 
 @app.route('/history')
 def history():
     """History Log page."""
-    return render_template('historyLog.html')
+    if not session.get('user_name'):
+        return redirect(url_for('login'))
+    return render_template('historyLog.html', username=session.get('user_name'), user_email=session.get('user_email'))
 
 @app.route('/reports')
 def reports():
     """Health Reports page."""
+    if not session.get('user_name'):
+        return redirect(url_for('login'))
     return render_template('healthReports.html')
 
 @app.route('/analysis')
 def analysis():
     """Analysis Results page (static demo)."""
+    if not session.get('user_name'):
+        return redirect(url_for('login'))
     return render_template('analysisResults.html')
 
 @app.route('/analysis/<food_name>')
 def analysis_result(food_name):
     """Analysis Results page for a specific food item."""
+    if not session.get('user_name'):
+        return redirect(url_for('login'))
     food = get_food_by_name(food_name)
     if food:
         nutrition = food["nutrition"]
@@ -168,7 +186,8 @@ def identify_food():
             "health_status": health_status,
             "health_score": health_score
         }
-        log_id = save_food_log("default", log_entry)
+        user_id = session.get('user_email', 'default')
+        log_id = save_food_log(user_id, log_entry)
 
         return jsonify({
             "status": "success",

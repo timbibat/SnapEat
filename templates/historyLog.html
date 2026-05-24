@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}SnapEat - Food Scan History{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/historyStyles.css') }}">
+{% endblock %}
+
+{% block body_attrs %}data-user-email="{{ user_email }}" data-user-name="{{ username }}"{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header with Back Button -->
+    <div class="history-header">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/" class="btn-back" title="Back to Dashboard">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="page-title m-0">Food Scan History</h1>
+                <p class="text-muted m-0">
+                    Welcome back, <strong>{{ username }}</strong>! Tracking your path to wellness.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards Section -->
+    <div class="row stats-row g-3 mt-1">
+        <!-- Total Scans -->
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon scans">
+                    <i class="bi bi-upc-scan"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Items</span>
+                    <span class="stat-value" id="statTotalScans">0</span>
+                </div>
+            </div>
+        </div>
+        <!-- Average Health Score -->
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon score">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Avg Health Score</span>
+                    <span class="stat-value" id="statAvgScore">0</span>
+                </div>
+            </div>
+        </div>
+        <!-- Today's logged Calories -->
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon calories">
+                    <i class="bi bi-fire"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Today's Calories</span>
+                    <span class="stat-value" id="statTodayCalories">0 kcal</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filters Panel -->
+    <div class="filter-panel">
+        <div class="row g-3">
+            <!-- Search input -->
+            <div class="col-lg-6 col-md-12">
+                <div class="search-input-wrapper">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" id="historySearchInput" class="form-control search-control" placeholder="Search logged foods...">
+                </div>
+            </div>
+            <!-- Health Rating Filter -->
+            <div class="col-lg-3 col-md-6">
+                <select id="historyFilterRating" class="form-select filter-control">
+                    <option value="all">All Health Ratings</option>
+                    <option value="excellent">Excellent</option>
+                    <option value="good">Good</option>
+                    <option value="fair">Fair</option>
+                    <option value="poor">Poor</option>
+                </select>
+            </div>
+            <!-- Sorting options -->
+            <div class="col-lg-3 col-md-6">
+                <select id="historySort" class="form-select filter-control">
+                    <option value="date_desc">Date: Newest First</option>
+                    <option value="date_asc">Date: Oldest First</option>
+                    <option value="score_desc">Score: Highest First</option>
+                    <option value="score_asc">Score: Lowest First</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="historyEmptyState" class="empty-state-card" style="display: none;">
+        <div class="empty-state-icon">
+            <i class="bi bi-egg-fried"></i>
+        </div>
+        <h2 class="empty-state-title">No Scans Recorded Yet</h2>
+        <p class="empty-state-text">
+            Start logging your meals to build a personal scan library, view nutrient logs, and unlock deep insights.
+        </p>
+        <a href="/scan" class="btn-scan-now">
+            <i class="bi bi-camera"></i> Start Scanning
+        </a>
+    </div>
+
+    <!-- Main Scan History List -->
+    <div id="historyList" class="history-list">
+        <!-- Rendered dynamically by historyLogic.js -->
+    </div>
+</div>
+
+<!-- Loader overlay for the history section -->
+<div id="global-loader" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255, 255, 255, 0.7); justify-content: center; align-items: center; z-index: 9999;">
+    <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<!-- Toast notification element -->
+<div id="global-toast" class="toast hidden" style="position: fixed; bottom: 20px; right: 20px; z-index: 1050; background: #333; color: white; padding: 10px 20px; border-radius: 8px;"></div>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="{{ url_for('static', filename='js/historyLogic.js') }}"></script>
+{% endblock %}
