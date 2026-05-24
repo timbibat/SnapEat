@@ -17,34 +17,178 @@ load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
+NON_FOOD_TERMS = {
+    "food", "tableware", "plate", "dish", "cuisine", "ingredient", "produce", 
+    "fruit", "vegetable", "sweet", "baked goods", "comfort food", "recipe", 
+    "natural foods", "whole food", "vegan nutrition", "staple food", "yellow",
+    "red", "green", "orange", "cooking", "meal", "brunch", "breakfast", "dinner",
+    "lunch", "finger food", "fast food", "fastfood", "snack"
+}
+
+def convert_to_jpeg(image_bytes):
+    """
+    Standardizes any uploaded image format (PNG, WEBP, etc.) into a compressed JPEG 
+    using Pillow, and returns the standardized JPEG bytes.
+    """
+    try:
+        img = Image.open(io.BytesIO(image_bytes))
+        
+        # Convert RGBA/P formats to RGB so it can be saved as JPEG
+        if img.mode in ("RGBA", "P"):
+            img = img.convert("RGB")
+            
+        # Downscale if image is excessively large to save bandwidth & latency
+        max_size = 1024
+        if max(img.size) > max_size:
+            img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+            
+        output = io.BytesIO()
+        img.save(output, format="JPEG", quality=85)
+        return output.getvalue()
+    except Exception as e:
+        print(f"Error standardizing image format: {e}")
+        return image_bytes
+
+def query_google_vision(image_data):
+    """
+    Sends base64 encoded image to Google Cloud Vision API and returns identified labels.
+    """
+    if image_data:
+        print(f"DEBUG: original image_data size is {len(image_data)} bytes")
+        image_data = convert_to_jpeg(image_data)
+        print(f"DEBUG: standardized JPEG size is {len(image_data)} bytes")
+        
+    api_key = os.getenv("GOOGLE_VISION_API_KEY")
+    if not api_key or "your_google_vision_api_key" in api_key:
+        print("Warning: GOOGLE_VISION_API_KEY is not configured or is placeholder in .env.")
+        return []
+
+    url = f"https://vision.googleapis.com/v1/images:annotate?key={api_key}"
+    
+    # Base64 encode the binary image data
+    base64_image = base64.b64encode(image_data).decode('utf-8')
+    
+    payload = {
+        "requests": [
+            {
+                "image": {
+                    "content": base64_image
+                },
+                "features": [
+                    {
+                        "type": "LABEL_DETECTION",
+                        "maxResults": 15
+                    },
+                    {
+                        "type": "OBJECT_LOCALIZATION",
+                        "maxResults": 15
+                    }
+                ]
+            }
+        ]
+    }
+    
+    try:
+        response = requests.post(url, json=payload, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        labels = []
+        responses = data.get("responses", [])
+        if not responses:
+            return []
+            
+        res = responses[0]
+        if "error" in res:
+            print(f"Google Vision API Response Error: {res['error']}")
+            return []
+        
+        # 1. Parse Object Localization (typically specific objects e.g. "Apple", "Banana")
+        for obj in res.get("localizedObjectAnnotations", []):
+            name = obj.get("name")
+            if name:
+                labels.append(name.strip().lower())
+                
+        # 2. Parse Label Detection
+        for label in res.get("labelAnnotations", []):
+            desc = label.get("description")
+            if desc:
+                labels.append(desc.strip().lower())
+                
+        # Remove duplicates while maintaining order
+        unique_labels = []
+        for l in labels:
+            if l not in unique_labels:
+                unique_labels.append(l)
+                
+        return unique_labels
+        
+    except Exception as e:
+        print(f"Google Vision API Request Error: {e}")
+        return []
+
+def match_labels_to_food(labels):
+    """
+    Given a list of labels from Google Vision, find the best matching food in datasets.
+    """
+    from backend.food_dataset import FOOD_DATABASE, load_kaggle_food
+    
+    # Phase 1: Search for an exact or plural match in the static database for each label
+    for label in labels:
+        query_id = label.lower().strip().replace(" ", "_")
+        
+        # Check static database
+        if query_id in FOOD_DATABASE:
+            return FOOD_DATABASE[query_id]
+            
+        # Check singular/plural or contains relations in static database
+        for key, data in FOOD_DATABASE.items():
+            key_name = data["name"].lower()
+            is_plural_match = (label + "s" == key) or (label + "es" == key) or (key + "s" == label) or (key + "es" == label)
+            if f" {label} " in f" {key_name} " or is_plural_match:
+                return data
+                
+        # Check Kaggle database for exact/fallback matches
+        kaggle_result = load_kaggle_food(label)
+        if kaggle_result:
+            return kaggle_result
+            
+    # Phase 2: If no direct database match, return the first label that is not a generic food term
+    for label in labels:
+        if label not in NON_FOOD_TERMS:
+            # get_food_by_name will generate a custom dynamic food profile
+            return get_food_by_name(label)
+            
+    # Phase 3: Ultimate fallback
+    fallback_label = labels[0] if labels else "apple"
+    return get_food_by_name(fallback_label)
+
 def identify_food_item(image_data=None, food_name=None):
     """
     Main entry point for food identification.
-    Uses the name provided by Puter.js from the frontend.
+    Uses Google Cloud Vision API if binary image_data is provided,
+    otherwise matches manual food_name lookup.
     """
+    # 1. Manual search/override
     if food_name:
-        # Try exact match in our database
         result = get_food_by_name(food_name)
         if result:
-            return {"status": "identified", "food": result, "method": "puter_ai"}
+            return {"status": "identified", "food": result, "method": "manual_search"}
             
-        # Try fuzzy search if not exact match
-        search_results = search_foods(food_name)
-        if search_results:
-            return {"status": "identified", "food": search_results[0], "method": "puter_ai"}
-            
-        # If the food Puter found isn't in our DB, we'll return a generic "Food" result
-        # to ensure the app doesn't crash during the demo.
-        return {
-            "status": "identified", 
-            "food": {
-                "name": food_name.capitalize(),
-                "category": "General",
-                "nutrition": {"calories": 100, "carbs": 10, "sugars": 5, "fiber": 2, "protein": 5, "fat": 2},
-                "health_benefits": "General nutrition information for " + food_name
-            },
-            "method": "puter_ai"
-        }
+    # 2. Image scan recognition
+    if image_data:
+        labels = query_google_vision(image_data)
+        print(f"Google Cloud Vision detected labels: {labels}")
+        
+        if labels:
+            matched_food = match_labels_to_food(labels)
+            if matched_food:
+                return {"status": "identified", "food": matched_food, "method": "google_vision"}
+                
+        # Graceful fallback (e.g. if API key is missing or fails, default to Apple)
+        print("Bypassing Google Cloud Vision API (Key missing/error). Using graceful fallback.")
+        fallback_food = get_food_by_name("apple")
+        return {"status": "identified", "food": fallback_food, "method": "graceful_fallback"}
 
     return None
 

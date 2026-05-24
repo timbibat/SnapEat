@@ -7,7 +7,6 @@
 {% endblock %}
 
 {% block body_class %}scanBody d-flex flex-column overflow-hidden{% endblock %}
-{% block body_attrs %}data-puter-auth-token="{{ puter_auth_token|default('', true) }}"{% endblock %}
 
 {% block content %}
 <!-- Header Bar -->
@@ -83,11 +82,6 @@
 </div>
 {% endblock %}
 
-{% block vendor_scripts %}
-<script src="https://js.puter.com/v2/"></script>
-{% endblock %}
-
 {% block page_scripts %}
-<script src="{{ url_for('static', filename='js/services/puterAuth.js') }}"></script>
 <script src="{{ url_for('static', filename='js/scannerLogic.js') }}"></script>
 {% endblock %}

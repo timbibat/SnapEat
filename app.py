@@ -29,11 +29,9 @@ def index():
 @app.route('/scan')
 def scan():
     """QR/Manual scan interface."""
-    # Use Auth Token to bypass login redirect
-    puter_auth_token = os.getenv("PUTER_AUTH_TOKEN", "")
-    if not session.get('user_name') and not puter_auth_token:
+    if not session.get('user_name'):
         return redirect(url_for('login'))
-    return render_template('scanFood.html', puter_auth_token=puter_auth_token)
+    return render_template('scanFood.html')
 
 @app.route('/login')
 def login():

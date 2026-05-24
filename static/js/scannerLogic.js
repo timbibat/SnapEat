@@ -1,6 +1,6 @@
 /**
  * Handles camera access, image capture, and image data preparation for food analysis.
- * Uses Puter.js (gpt-5.4-nano) for frontend AI identification.
+ * Uploads images directly to backend where Google Cloud Vision is used.
  */
 
 window.DomUtils.ready(() => {
@@ -56,17 +56,14 @@ window.DomUtils.ready(() => {
 
             // 3. FALLBACK: Try a completely empty constraint (Most compatible)
             try {
-                // Support legacy prefixes if needed
                 const getUserMedia = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ||
                     navigator.webkitGetUserMedia ||
                     navigator.mozGetUserMedia;
 
                 if (typeof getUserMedia === 'function') {
-                    // If using legacy, we need to bind context
                     if (navigator.mediaDevices) {
                         currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
                     } else {
-                        // Legacy callback-style wrapped in Promise
                         currentStream = await new Promise((resolve, reject) => {
                             getUserMedia.call(navigator, { video: true }, resolve, reject);
                         });
@@ -101,47 +98,8 @@ window.DomUtils.ready(() => {
         }
     }
 
-    async function ensurePuterSignedIn() {
-        if (!window.puter?.auth) {
-            alert("Puter is still loading. Please try again in a moment.");
-            return false;
-        }
-
-        if (puter.auth.isSignedIn()) {
-            return true;
-        }
-
-        const isMedian = window.PuterAuth?.isMedianEnvironment?.() ||
-            navigator.userAgent.includes('GoNative') ||
-            Boolean(window.gonative);
-        let msg = "Please sign in to Puter to continue analysis.";
-        if (isMedian) {
-            msg += "\n\nTip for Median.co: add 'puter.com' to Internal Domains in the Median dashboard so the sign-in can complete inside the app.";
-        }
-
-        alert(msg);
-
-        try {
-            if (window.PuterAuth?.signInAndReturnToScan) {
-                await window.PuterAuth.signInAndReturnToScan();
-            } else {
-                await puter.auth.signIn();
-                window.location.replace('/scan');
-            }
-        } catch (err) {
-            console.error("Puter Sign-in Error:", err);
-            alert("Failed to sign in to Puter. If you're on a mobile app, try opening this in a regular browser first.");
-        }
-
-        return false;
-    }
-
     // --- Image Capture ---
     async function captureImage() {
-        if (!(await ensurePuterSignedIn())) {
-            return;
-        }
-
         if (!video || !currentStream) {
             alert("Camera is not ready.");
             return;
@@ -160,88 +118,38 @@ window.DomUtils.ready(() => {
         }, 'image/jpeg', 0.85);
     }
 
-    // --- Upload Logic ---
-    async function uploadFoodImage(imageBlob, name = null) {
-        if (name) {
-            // If name is already known (from file upload), skip AI and send to backend
-            sendToBackend(imageBlob, name);
-            return;
-        }
-
+    // --- Upload and Recognition Ingestion ---
+    async function uploadFoodImage(imageBlob) {
         try {
-            // Show the "Analyzing..." spinner
+            // Show loading animation overlay
             showLoading(true);
 
-            // Convert Blob to Data URL for Puter.js
-            const reader = new FileReader();
-            reader.readAsDataURL(imageBlob);
-            reader.onloadend = async () => {
-                const dataUrl = reader.result;
-
-                console.log("Analyzing with gpt-5.4-nano...");
-
-                // Safety timeout: If AI doesn't respond in 15s, stop loading
-                const timeout = setTimeout(() => {
-                    alert("AI Analysis is taking longer than expected. Please try again or check your internet.");
-                    showLoading(false);
-                }, 15000);
-
-                // Call Puter.js AI
-                puter.ai.chat(
-                    "Identify the food in this image. Return ONLY the one-word name (e.g. 'Apple').",
-                    dataUrl,
-                    {
-                        model: "gpt-5.4-nano",
-                        stream: false
-                    }
-                )
-                    .then(response => {
-                        clearTimeout(timeout);
-                        const identifiedName = response.toString().trim().toLowerCase().replace(/[^a-z ]/g, "");
-                        console.log("Puter identified:", identifiedName);
-                        sendToBackend(imageBlob, identifiedName);
-                    })
-                    .catch(err => {
-                        clearTimeout(timeout);
-                        console.error("Puter AI Error:", err);
-                        alert("AI Error: " + (err.message || "Failed to identify food."));
-                        showLoading(false);
-                    });
-            };
-
-        } catch (error) {
-            console.error("Upload error:", error);
-            alert("Error: " + error.message);
-            showLoading(false);
-        }
-    }
-
-    async function sendToBackend(imageBlob, identifiedName) {
-        try {
             const formData = new FormData();
             formData.append('food_image', imageBlob, 'capture.jpg');
-            if (identifiedName) {
-                formData.append('food_name', identifiedName);
-            }
 
+            // Send image directly to Flask backend which runs Google Cloud Vision
             const response = await fetch('/api/food/identify', {
                 method: 'POST',
                 body: formData
             });
 
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || "Failed to log food.");
+            if (!response.ok) {
+                throw new Error(data.message || "Failed to identify food.");
+            }
 
-            // Stop camera and redirect
+            // Clean up camera stream resources
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
             }
+
+            // Redirect user to the nutritional analysis results screen
             if (data.food_id) {
                 window.location.href = `/analysis/${data.food_id}`;
             }
-        } catch (err) {
-            console.error("Backend error:", err);
-            alert("Food identified, but failed to retrieve nutrition data.");
+        } catch (error) {
+            console.error("Scanning Error:", error);
+            alert("Recognition Error: " + error.message);
             showLoading(false);
         }
     }
@@ -263,15 +171,9 @@ window.DomUtils.ready(() => {
     }
 
     if (imageUploadInput) {
-        imageUploadInput.addEventListener('change', async (e) => {
-            if (!(await ensurePuterSignedIn())) {
-                e.target.value = '';
-                return;
-            }
-
+        imageUploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
-                // ALWAYS use AI identification for uploads to get clean names
                 uploadFoodImage(file);
             }
         });
