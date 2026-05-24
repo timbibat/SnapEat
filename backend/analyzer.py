@@ -15,14 +15,18 @@ from backend.food_dataset import get_food_by_name, search_foods, get_all_food_na
 
 load_dotenv()
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-
 NON_FOOD_TERMS = {
     "food", "tableware", "plate", "dish", "cuisine", "ingredient", "produce", 
     "fruit", "vegetable", "sweet", "baked goods", "comfort food", "recipe", 
     "natural foods", "whole food", "vegan nutrition", "staple food", "yellow",
     "red", "green", "orange", "cooking", "meal", "brunch", "breakfast", "dinner",
-    "lunch", "finger food", "fast food", "fastfood", "snack"
+    "lunch", "finger food", "fast food", "fastfood", "snack", "snacks", "bowl", "bowls",
+    "cup", "cups", "container", "containers", "sauce", "sauces", "utensil", "utensils",
+    "logo", "logos", "brand", "branding", "trademark", "product", "goods", "packaging",
+    "package", "label", "labels", "advertising", "advertisement", "sign", "sticker", "stickers",
+    "text", "font", "writing", "lettering", "alphabet", "word", "color", "blue", "brown", 
+    "black", "white", "purple", "pink", "graphic", "graphics", "graphic design", "design", 
+    "art", "illustration", "clipart", "drawing", "plastic", "paper", "bag", "box", "carton", "wrapper"
 }
 
 def convert_to_jpeg(image_bytes):
@@ -133,34 +137,46 @@ def match_labels_to_food(labels):
     """
     from backend.food_dataset import FOOD_DATABASE, load_kaggle_food
     
-    # Phase 1: Search for an exact or plural match in the static database for each label
-    for label in labels:
-        query_id = label.lower().strip().replace(" ", "_")
-        
-        # Check static database
+    cleaned_labels = [l.lower().strip() for l in labels if l]
+    
+    # Step 1: Search for an EXACT or plural match in the high-quality static database for ALL labels first
+    for label in cleaned_labels:
+        query_id = label.replace(" ", "_")
         if query_id in FOOD_DATABASE:
+            print(f"DEBUG: Matched exact static food for label '{label}': {FOOD_DATABASE[query_id]['name']}")
             return FOOD_DATABASE[query_id]
             
-        # Check singular/plural or contains relations in static database
+    # Step 2: Search for "contains" or singular/plural relations in the static database for ALL labels
+    for label in cleaned_labels:
+        if label in NON_FOOD_TERMS:
+            continue  # Skip generic terms
+            
         for key, data in FOOD_DATABASE.items():
             key_name = data["name"].lower()
             is_plural_match = (label + "s" == key) or (label + "es" == key) or (key + "s" == label) or (key + "es" == label)
             if f" {label} " in f" {key_name} " or is_plural_match:
+                print(f"DEBUG: Matched partial static food for label '{label}': {data['name']}")
                 return data
                 
-        # Check Kaggle database for exact/fallback matches
+    # Step 3: Search the Kaggle database for matches for non-generic labels
+    for label in cleaned_labels:
+        if label in NON_FOOD_TERMS:
+            continue
+            
         kaggle_result = load_kaggle_food(label)
         if kaggle_result:
+            print(f"DEBUG: Matched Kaggle food for label '{label}': {kaggle_result['name']}")
             return kaggle_result
             
-    # Phase 2: If no direct database match, return the first label that is not a generic food term
-    for label in labels:
+    # Step 4: If no database match, return the first label that is not a generic food term
+    for label in cleaned_labels:
         if label not in NON_FOOD_TERMS:
-            # get_food_by_name will generate a custom dynamic food profile
+            print(f"DEBUG: Dynamic fallback for label '{label}'")
             return get_food_by_name(label)
             
-    # Phase 3: Ultimate fallback
-    fallback_label = labels[0] if labels else "apple"
+    # Step 5: Ultimate fallback
+    fallback_label = cleaned_labels[0] if cleaned_labels else "apple"
+    print(f"DEBUG: Ultimate fallback to '{fallback_label}'")
     return get_food_by_name(fallback_label)
 
 def identify_food_item(image_data=None, food_name=None):
