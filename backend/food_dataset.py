@@ -9,7 +9,7 @@ FOOD_DATABASE = {
     "apple": {
         "name": "Apple",
         "category": "Fruit",
-        "image_url": "https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?auto=format&fit=crop&w=500&q=60",
+        "image_url": "https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?auto=format&fit=crop&w=500&q=60",
         "nutrition": {
             "calories": 95, "carbs": 25, "sugars": 19,
             "fiber": 4, "protein": 0.5, "fat": 0.3,
@@ -442,6 +442,102 @@ FOOD_DATABASE = {
 import os
 import csv
 
+# Comprehensive mapping of common fruit names to high-quality specific Unsplash image URLs
+FRUIT_IMAGES = {
+    "apple": "https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?auto=format&fit=crop&w=500&q=60",
+    "banana": "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=500&q=60",
+    "orange": "https://images.unsplash.com/photo-1547514701-42782101795e?auto=format&fit=crop&w=500&q=60",
+    "grapes": "https://images.unsplash.com/photo-1537640538966-79f369143f8f?auto=format&fit=crop&w=500&q=60",
+    "grape": "https://images.unsplash.com/photo-1537640538966-79f369143f8f?auto=format&fit=crop&w=500&q=60",
+    "mango": "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=500&q=60",
+    "strawberry": "https://images.unsplash.com/photo-1509622905150-fa66d3906e09?auto=format&fit=crop&w=500&q=60",
+    "strawberries": "https://images.unsplash.com/photo-1509622905150-fa66d3906e09?auto=format&fit=crop&w=500&q=60",
+    "blueberry": "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&w=500&q=60",
+    "blueberries": "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&w=500&q=60",
+    "blackberry": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=500&q=60",
+    "blackberries": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=500&q=60",
+    "raspberry": "https://images.unsplash.com/photo-1577069861033-55d04cec4ef5?auto=format&fit=crop&w=500&q=60",
+    "raspberries": "https://images.unsplash.com/photo-1577069861033-55d04cec4ef5?auto=format&fit=crop&w=500&q=60",
+    "berry": "https://images.unsplash.com/photo-1577069861033-55d04cec4ef5?auto=format&fit=crop&w=500&q=60",
+    "berries": "https://images.unsplash.com/photo-1577069861033-55d04cec4ef5?auto=format&fit=crop&w=500&q=60",
+    "pineapple": "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=500&q=60",
+    "watermelon": "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=500&q=60",
+    "peach": "https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&w=500&q=60",
+    "peaches": "https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&w=500&q=60",
+    "pear": "https://images.unsplash.com/photo-1514756331096-242fdeb70d4a?auto=format&fit=crop&w=500&q=60",
+    "pears": "https://images.unsplash.com/photo-1514756331096-242fdeb70d4a?auto=format&fit=crop&w=500&q=60",
+    "cherry": "https://images.unsplash.com/photo-1527661591475-527312dd65f5?auto=format&fit=crop&w=500&q=60",
+    "cherries": "https://images.unsplash.com/photo-1527661591475-527312dd65f5?auto=format&fit=crop&w=500&q=60",
+    "lemon": "https://images.unsplash.com/photo-1590502593747-42a996133562?auto=format&fit=crop&w=500&q=60",
+    "lemons": "https://images.unsplash.com/photo-1590502593747-42a996133562?auto=format&fit=crop&w=500&q=60",
+    "lime": "https://images.unsplash.com/photo-1590502593747-42a996133562?auto=format&fit=crop&w=500&q=60",
+    "limes": "https://images.unsplash.com/photo-1590502593747-42a996133562?auto=format&fit=crop&w=500&q=60",
+    "coconut": "https://images.unsplash.com/photo-1526318896980-cf78c088247c?auto=format&fit=crop&w=500&q=60",
+    "coconuts": "https://images.unsplash.com/photo-1526318896980-cf78c088247c?auto=format&fit=crop&w=500&q=60",
+    "kiwi": "https://images.unsplash.com/photo-1618897996318-5a901fa6ca71?auto=format&fit=crop&w=500&q=60",
+    "kiwifruit": "https://images.unsplash.com/photo-1618897996318-5a901fa6ca71?auto=format&fit=crop&w=500&q=60",
+    "grapefruit": "https://images.unsplash.com/photo-1552089123-2d26226fc2b7?auto=format&fit=crop&w=500&q=60",
+    "pomegranate": "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&w=500&q=60",
+    "avocado": "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=500&q=60",
+    "avocados": "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=500&q=60",
+    "papaya": "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&w=500&q=60",
+    "papayas": "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&w=500&q=60",
+    "plum": "https://images.unsplash.com/photo-1603052875302-d376b7c0638a?auto=format&fit=crop&w=500&q=60",
+    "plums": "https://images.unsplash.com/photo-1603052875302-d376b7c0638a?auto=format&fit=crop&w=500&q=60",
+    "apricot": "https://images.unsplash.com/photo-1595908129746-57ca1a63dd4d?auto=format&fit=crop&w=500&q=60",
+    "apricots": "https://images.unsplash.com/photo-1595908129746-57ca1a63dd4d?auto=format&fit=crop&w=500&q=60",
+    "fig": "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=500&q=60",
+    "figs": "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=500&q=60",
+    "passion fruit": "https://images.unsplash.com/photo-1579372786545-d24232daf58c?auto=format&fit=crop&w=500&q=60",
+    "passionfruit": "https://images.unsplash.com/photo-1579372786545-d24232daf58c?auto=format&fit=crop&w=500&q=60",
+    "melon": "https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&w=500&q=60",
+    "cantaloupe": "https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&w=500&q=60",
+    "dragonfruit": "https://images.unsplash.com/photo-1527324688151-0e627063f2b1?auto=format&fit=crop&w=500&q=60",
+    "dragon fruit": "https://images.unsplash.com/photo-1527324688151-0e627063f2b1?auto=format&fit=crop&w=500&q=60",
+    "jackfruit": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=500&q=60",
+    "starfruit": "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?auto=format&fit=crop&w=500&q=60",
+    "star fruit": "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?auto=format&fit=crop&w=500&q=60",
+    "carambola": "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?auto=format&fit=crop&w=500&q=60",
+    "lychee": "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&w=500&q=60",
+    "guava": "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=500&q=60",
+    "fruit": "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?auto=format&fit=crop&w=500&q=60"
+}
+
+def get_fruit_image_url(food_name):
+    """
+    Checks if a food name represents or contains a fruit,
+    and returns a specific Unsplash image URL. Returns None if not identified as a fruit.
+    """
+    if not food_name:
+        return None
+    name_lower = food_name.lower().strip()
+    
+    # 1. Direct match in FRUIT_IMAGES
+    if name_lower in FRUIT_IMAGES:
+        return FRUIT_IMAGES[name_lower]
+        
+    # 2. Check if the name contains any key in FRUIT_IMAGES
+    for key, url in FRUIT_IMAGES.items():
+        # Avoid matching short words like "fig" too broadly, require word boundaries
+        if len(key) > 3:
+            if key in name_lower:
+                return url
+        else:
+            # Word boundary check for short words like 'fig'
+            words = name_lower.split()
+            if key in words:
+                return url
+                
+    # 3. Check if name contains the word "fruit" or "berry" or "melon"
+    if "fruit" in name_lower:
+        return FRUIT_IMAGES["fruit"]
+    if "berry" in name_lower:
+        return FRUIT_IMAGES["berry"]
+    if "melon" in name_lower:
+        return FRUIT_IMAGES["melon"]
+        
+    return None
+
 # Path to the Kaggle CSV files
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
 
@@ -495,10 +591,15 @@ def format_kaggle_row(row):
             try: return float(val) if val and val.strip() else 0.0
             except: return 0.0
 
+        food_name = row['food']
+        fruit_img = get_fruit_image_url(food_name)
+        category = "Fruit" if fruit_img else "General"
+        image_url = fruit_img if fruit_img else "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=60"
+
         return {
-            "name": row['food'].title(),
-            "category": "General",
-            "image_url": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=60",
+            "name": food_name.title(),
+            "category": category,
+            "image_url": image_url,
             "nutrition": {
                 "calories": safe_float(row.get('Caloric Value', 0)),
                 "carbs": safe_float(row.get('Carbohydrates', 0)),
@@ -559,10 +660,14 @@ def get_food_by_name(food_name):
         return kaggle_result
 
     # 4. FINAL DYNAMIC FALLBACK: If food not in DB or CSV, create a "General" profile
+    fruit_img = get_fruit_image_url(food_name)
+    category = "Fruit" if fruit_img else "General"
+    image_url = fruit_img if fruit_img else "https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=500&q=80"
+
     return {
         "name": food_name.title(),
-        "category": "General",
-        "image_url": "https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=500&q=80",
+        "category": category,
+        "image_url": image_url,
         "nutrition": {
             "calories": 100, "carbs": 15, "sugars": 8, "fiber": 3, "protein": 2, "fat": 1
         },
